@@ -14,7 +14,7 @@ class Entity {
     this.velocityY = vy;
   }
   
- void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, Entity target) {
+void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, Entity target) {
   float nextX = this.positionVector.x;
   float nextY = this.positionVector.y;
 
@@ -25,7 +25,8 @@ class Entity {
     nextX += this.velocityX;
   }
 
-  if (!checkCollisionX(target, nextX)) {
+  // Verifica colisão em X com base no Y atual
+  if (!checkCollisionX(target, nextX, this.positionVector.y)) {
     this.positionVector.x = nextX;
   }
 
@@ -36,30 +37,14 @@ class Entity {
     nextY += this.velocityY;
   }
 
-  if (!checkCollisionY(target, nextY)) {
+  // Verifica colisão em Y com base no X atualizado
+  if (!checkCollisionY(target, this.positionVector.x, nextY)) {
     this.positionVector.y = nextY;
   }
 
   this.desenhar();
 }
-  
-  void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft) {
-    
-    if(moveUp) {
-      this.positionVector.y -= this.velocityY;
-    }
-    if(moveLeft) {
-      this.positionVector.x -= this.velocityX;
-    }
-    if(moveDown) {
-      this.positionVector.y += this.velocityY;
-    }
-    if(moveRight) {
-      this.positionVector.x += this.velocityX;
-    }
-    
-    this.desenhar();
-  }
+
   
   boolean checkCollision(Entity target) {
     float Ax = this.positionVector.x;
@@ -75,19 +60,19 @@ class Entity {
     return ((Ax < Dx && Cx < Bx) && (Ay < Dy && Cy < By));
   }
   
-  boolean checkCollisionX(Entity target, float nextX) {
+boolean checkCollisionX(Entity target, float nextX, float currentY) {
   return (
     nextX < target.positionVector.x + target.hitboxWidth &&
     nextX + this.hitboxWidth > target.positionVector.x &&
-    this.positionVector.y < target.positionVector.y + target.hitboxHeight &&
-    this.positionVector.y + this.hitboxHeight > target.positionVector.y
+    currentY < target.positionVector.y + target.hitboxHeight &&
+    currentY + this.hitboxHeight > target.positionVector.y
   );
 }
 
-boolean checkCollisionY(Entity target, float nextY) {
+boolean checkCollisionY(Entity target, float currentX, float nextY) {
   return (
-    this.positionVector.x < target.positionVector.x + target.hitboxWidth &&
-    this.positionVector.x + this.hitboxWidth > target.positionVector.x &&
+    currentX < target.positionVector.x + target.hitboxWidth &&
+    currentX + this.hitboxWidth > target.positionVector.x &&
     nextY < target.positionVector.y + target.hitboxHeight &&
     nextY + this.hitboxHeight > target.positionVector.y
   );

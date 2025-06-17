@@ -2,8 +2,8 @@ float velocidadeMax;
 boolean moveUp, moveDown, moveRight, moveLeft;
 PVector pv = new PVector(400, 300);
 PVector ev = new PVector(400, 500);
-Player p = new Player(pv, 10, 10, 60, 60);
-Enemy e = new Enemy(ev, 5, 5, 60, 60);
+Player p = new Player(pv, 10, 10, 50, 60); //PVector pv, int vx, int vy, int hbw, int hbh
+Enemy e = new Enemy(ev, 2, 2, 30, 60);
 
 void setup() {
   size(800, 600);  
@@ -11,7 +11,7 @@ void setup() {
 
 void draw() {
   background(80);
-  p.move(moveUp, moveDown, moveRight, moveLeft);
+  p.move(moveUp, moveDown, moveRight, moveLeft, e);
   e.move(p);
 }
 
