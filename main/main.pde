@@ -6,7 +6,9 @@ boolean moveUp, moveDown, moveRight, moveLeft, attackPressed, quitGame;
 PVector pv = new PVector(400, 300);
 PVector ev = new PVector(400, 500);
 Player p = new Player(pv, 10, 10, 50, 60); //PVector pv, int vx, int vy, int hbw, int hbh
-Enemy e = new Enemy(ev, 2, 2, 30, 60, 100);
+//Enemy e = new Enemy(ev, 2, 2, 30, 60, 100);
+
+Crowd crowd = new Crowd(5);
 
 void setup() {
   size(800, 600);
@@ -32,10 +34,12 @@ void draw() {
         p.attack('r');
       }
     }
-
+    
+    crowd.update(p);
+    
     p.updateAttacks();
-    p.move(moveUp, moveDown, moveRight, moveLeft, e);
-    e.move(p);
+    p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
+    //e.move(p);
 
     if (quitGame) {
       gameState = 4;
