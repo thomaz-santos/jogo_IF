@@ -3,12 +3,13 @@ Timer t = new Timer(5000);
 
 float velocidadeMax;
 boolean moveUp, moveDown, moveRight, moveLeft, attackPressed, quitGame;
+char lastSide;
 PVector pv = new PVector(400, 300);
 PVector ev = new PVector(400, 500);
 Player p = new Player(pv, 10, 10, 50, 60); //PVector pv, int vx, int vy, int hbw, int hbh
 //Enemy e = new Enemy(ev, 2, 2, 30, 60, 100);
 
-Crowd crowd = new Crowd(5);
+Crowd crowd = new Crowd(10);
 
 void setup() {
   size(800, 600);
@@ -27,16 +28,15 @@ void draw() {
     //println("attack: " + attackPressed);
     background(80);
 
+
     if (attackPressed) {
-      if (moveLeft) {
-        p.attack('l');
-      } else {
-        p.attack('r');
-      }
+      p.attack(lastSide);
     }
-    
+
+
+
     crowd.update(p);
-    
+
     p.updateAttacks();
     p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
     //e.move(p);
@@ -68,6 +68,7 @@ void keyPressed() {
 
   case 'a':
     moveLeft = true;
+    lastSide = 'l';
     break;
 
   case 's':
@@ -76,11 +77,15 @@ void keyPressed() {
 
   case 'd':
     moveRight = true;
+    lastSide = 'r';
     break;
 
   case 'p':
     quitGame = true;
     break;
+
+  case 'n':
+    crowd = new Crowd((int) random(1, 10));
   }
 }
 
