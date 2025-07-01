@@ -134,7 +134,7 @@ class Enemy extends Entity {
     this.acceleration = 1;
   }
 
-  void move(Entity target) {
+  void move(Entity target, Entity enemie) {
     float nextX = this.positionVector.x;
     float nextY = this.positionVector.y;
     
@@ -157,7 +157,7 @@ class Enemy extends Entity {
       nextX -= this.velocityX;
     }
 
-    if (!checkCollisionX(target, nextX)) {
+    if (!checkCollisionX(target, nextX) || !checkCollisionX(enemie, nextX)) {
       this.positionVector.x = nextX;
     } else {
       this.velocityX = -7;
@@ -171,7 +171,7 @@ class Enemy extends Entity {
       nextY -= this.velocityY;
     }
 
-    if (!checkCollisionY(target, nextY)) {
+    if (!checkCollisionY(target, nextY) || !checkCollisionY(enemie, nextY)) {
       this.positionVector.y = nextY;
     } else {
       this.velocityY = -7;
@@ -180,8 +180,48 @@ class Enemy extends Entity {
 
     this.desenhar();
   }
+  
+  void checkAttack(Attack attack) {
+    float nextX = this.positionVector.x;
+    float nextY = this.positionVector.y;
+
+    // Movimento em X
+    if (attack.positionVector.x > this.positionVector.x) {
+      nextX += this.velocityX;
+    } else if (attack.positionVector.x < this.positionVector.x) {
+      nextX -= this.velocityX;
+    }
+
+    if (checkCollisionX(attack, nextX)) {
+      this.velocityX = -7;
+      this.positionVector.x = nextX;
+      this.hp -= 10;
+    }
+
+    // Movimento em Y
+    if (attack.positionVector.y > this.positionVector.y) {
+      nextY += this.velocityY;
+    } else if (attack.positionVector.y < this.positionVector.y) {
+      nextY -= this.velocityY;
+    }
+
+    if (checkCollisionY(attack, nextY)) {
+      this.velocityY = -7;
+      this.positionVector.y = nextY;
+      this.hp -= 10;
+    }
+  }
 
   boolean checkCollisionX(Entity target, float nextX) {
+    return (
+      nextX < target.positionVector.x + target.hitboxWidth &&
+      nextX + this.hitboxWidth > target.positionVector.x &&
+      this.positionVector.y < target.positionVector.y + target.hitboxHeight &&
+      this.positionVector.y + this.hitboxHeight > target.positionVector.y
+      );
+  }
+  
+  boolean checkCollisionX(Attack target, float nextX) {
     return (
       nextX < target.positionVector.x + target.hitboxWidth &&
       nextX + this.hitboxWidth > target.positionVector.x &&
@@ -197,6 +237,22 @@ class Enemy extends Entity {
       nextY < target.positionVector.y + target.hitboxHeight &&
       nextY + this.hitboxHeight > target.positionVector.y
       );
+  }
+  
+  boolean checkCollisionY(Attack target, float nextY) {
+    return (
+      this.positionVector.x < target.positionVector.x + target.hitboxWidth &&
+      this.positionVector.x + this.hitboxWidth > target.positionVector.x &&
+      nextY < target.positionVector.y + target.hitboxHeight &&
+      nextY + this.hitboxHeight > target.positionVector.y
+      );
+  }
+  
+  boolean isAlive() {
+    if(this.hp <= 0) {
+      return false;
+    }
+    return true;
   }
 
 
