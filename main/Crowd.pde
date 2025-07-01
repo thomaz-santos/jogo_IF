@@ -17,8 +17,18 @@ class Crowd {
   }
   
   void update(Player player) {
-    for(Enemy enemy : this.enemiesList) {
-      enemy.move(player);
+    for(int i = 0;i < enemiesList.size();i++) {
+      Enemy enemy = enemiesList.get(i);
+      
+      
+      enemy.move(player, enemy);
+      if(player.attacksList.size() > 0) {
+        enemy.checkAttack(player.attacksList.get(0));
+      }
+      
+      if(!enemy.isAlive()) {
+        this.enemiesList.remove(enemy);
+      }
     }
   }
 }
