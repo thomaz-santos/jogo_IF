@@ -1,0 +1,2 @@
+- Dash mechanic
+  - When the dash button is pressed, make a big increase in the player velocity for x seconds, while disabling his moviment input 
