@@ -1,38 +1,61 @@
-int gameState = 1;
+int gameState = 0;
+MenuManager menuManager;
+
 Timer t = new Timer(5000);
+//Timer gameTime = new Timer(10000);
 
 float velocidadeMax;
 boolean moveUp, moveDown, moveRight, moveLeft, attackPressed, quitGame;
 char lastSide;
-PVector pv = new PVector(400, 300);
-PVector ev = new PVector(400, 500);
-Player p = new Player(pv, 10, 10, 50, 60); //PVector pv, int vx, int vy, int hbw, int hbh
-//Enemy e = new Enemy(ev, 2, 2, 30, 60, 100);
+PVector pv;
+Player p;
 
-Crowd crowd = new Crowd(10);
+Crowd crowd;
+GameTimer gameTimer;
+boolean initialTime;
 
 void setup() {
-  size(800, 600);
+  size(1600, 900);
+  menuManager = new MenuManager(gameState);
+  //menuManager.createInitialMenu();
+  
+  pv = new PVector(width/2, height/2);
+  p = new Player(pv, 4.5, 4.5, 50, 60); //PVector pv, float vx, float vy, int hbw, int hbh
+  
+  crowd = new Crowd(10, p);
 }
 
 void draw() {
   switch(gameState) {
-  case 0:
-    text("Hello!", width/2, height/2);
-    if (t.disparou()) {
-      gameState++;
-    }
+  case 0:  
+    background(200);
+    menuManager.createInitialMenu();
+    gameState = menuManager.update(gameState);
+    initialTime = true;
+    
     break;
 
   case 1:
-    //println("attack: " + attackPressed);
+    if (initialTime) {
+      gameTimer = new GameTimer(10);
+      //RESETAR TODOS OS VALORES PARA OS INICIAIS
+      
+      initialTime = false;
+    }
+    
     background(80);
 
-
-    if (attackPressed) {
-      p.attack(lastSide);
+    if (crowd.enemiesList.isEmpty()) {
+      crowd.create(p);
     }
 
+    if (attackPressed) {
+      if (mouseButton == LEFT) {
+        p.attack();
+      } else {
+        p.bulletAttack();
+      }
+    }
 
 
     crowd.update(p);
@@ -41,14 +64,40 @@ void draw() {
     p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
     //e.move(p);
 
-    if (quitGame) {
+    gameTimer.update();
+    gameTimer.draw();
+
+    if (!p.isAlive() || !gameTimer.isActive()) {
       gameState = 4;
     }
+    
+    if(quitGame) {
+      gameState = 0;
+    }
+    break;
+
+  case 2:
+    background(200);
+    menuManager.createOptionsMenu();
+    gameState = menuManager.update(gameState);
+    break;
+    
+  case 3:
+    background(200);
+    menuManager.createCreditsMenu();
+    gameState = menuManager.update(gameState);
     break;
 
   case 4:
     background(0);
-    text("Obrigado!", width/2, height/2);
+    String text;
+    if (!p.isAlive()) {
+      text = "Voce perdeu! KKKKKKKKKK";
+    } else {
+      text = "Você conseguiu sobreviver!";
+    }
+    textAlign(CENTER);
+    text(text, width/2, height/2);
     break;
   }
 }
@@ -85,7 +134,7 @@ void keyPressed() {
     break;
 
   case 'n':
-    crowd = new Crowd((int) random(1, 10));
+    crowd = new Crowd((int) random(5, 10), p);
   }
 }
 
@@ -114,7 +163,9 @@ void keyReleased() {
 }
 
 void mousePressed() {
-  attackPressed = true;
+  if (mouseButton == LEFT || mouseButton == RIGHT) {
+    attackPressed = true;
+  }
 }
 
 void mouseReleased() {

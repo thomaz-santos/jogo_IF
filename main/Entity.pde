@@ -2,16 +2,29 @@ class Entity {
   PVector positionVector;
   int hitboxWidth;
   int hitboxHeight;
-  int velocityX;
-  int velocityY;
-  boolean collision;
+  float velocityX;
+  float velocityY;
+  boolean collision, hittable;
+  int hittableCooldown;
+  int points;
+  float hp, maxHp;
+  int lastHit;
 
-  public Entity (PVector pv, int vx, int vy, int hbw, int hbh) {
+  //ArrayList<DamageParticle> damageParticlesList = new ArrayList<DamageParticle>();
+
+  public Entity (PVector pv, float vx, float vy, int hbw, int hbh) {
     this.positionVector = pv;
     this.hitboxWidth = hbw;
     this.hitboxHeight = hbh;
     this.velocityX = vx;
     this.velocityY = vy;
+
+    points = 0;
+
+    maxHp = 100;
+    hp = maxHp;
+    hittable = true;
+    hittableCooldown = 1500;
   }
 
   void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, ArrayList<Enemy> enemiesCrowd) {
@@ -25,10 +38,23 @@ class Entity {
       nextX += this.velocityX;
     }
 
+    if (millis() > lastHit + hittableCooldown) {
+      hittable = true;
+    }
+
     // Verifica colisão em X com base no Y atual
     for (Enemy target : enemiesCrowd) {
       if (!checkCollisionX(target, nextX, this.positionVector.y)) {
         this.positionVector.x = nextX;
+      } else {
+        if (this.hp > 0 && hittable) {
+          this.hp -= 25;
+          println("hit");
+          hittable = false;
+          lastHit = millis();
+          delay(70);
+          //damageParticlesList.add(new DamageParticle(this.positionVector, 1, 2.5, -0.3, 2.0, 800, 5));
+        }
       }
     }
 
@@ -44,10 +70,31 @@ class Entity {
     for (Enemy target : enemiesCrowd) {
       if (!checkCollisionY(target, this.positionVector.x, nextY)) {
         this.positionVector.y = nextY;
+      } else {
+        if (this.hp > 0 && hittable) {
+          this.hp -= 25;
+          println("hit");
+          hittable = false;
+          lastHit = millis();
+          delay(70);
+          //damageParticlesList.add(new DamageParticle(this.positionVector, 1, 2.5, -0.3, 2.0, 800, 5)); PVector pv, float vx, float vy, float a, float ma, int lf, int dmg
+        }
       }
     }
-    
+
     this.desenhar();
+
+    //for (DamageParticle p : damageParticlesList) {
+    //  p.update();
+    //}
+  }
+
+  boolean isAlive() {
+    if (this.hp > 0) {
+      return true;
+    }
+
+    return false;
   }
 
 
@@ -84,28 +131,63 @@ class Entity {
   }
 
   void desenhar() {
-    fill(10, 210, 100);
-    rect(this.positionVector.x, this.positionVector.y, this.hitboxWidth, this.hitboxHeight);
+    //Pontos do jogador
+    fill(58, 207, 117);
+    textAlign(LEFT);
+    text("Pontos: " + this.points, width*0.001, height*0.04);
+
+    //Hitbox do jogador
+    if (hittable) {
+      fill(7, 138, 65, 255);
+      rect(this.positionVector.x, this.positionVector.y, this.hitboxWidth, this.hitboxHeight);
+    } else {
+      fill(7, 138, 65, 120);
+      rect(this.positionVector.x, this.positionVector.y, this.hitboxWidth, this.hitboxHeight);
+    }
+
+    //Barra de vida do jogador
+    float currentHp = map(this.hp, 0, this.maxHp, 0, 200);
+
+    fill(186, 7, 7);
+    rect(10, 60, 200, 20);
+
+    fill(58, 207, 117);
+    rect(10, 60, currentHp, 20);
   }
 }
 class Player extends Entity {
   ArrayList<Attack> attacksList = new ArrayList<Attack>();
   boolean attackAvailable = true;
+  boolean bulletAttackAvailable = true;
 
 
-  public Player(PVector pv, int vx, int vy, int hbw, int hbh) {
+
+  public Player(PVector pv, float vx, float vy, int hbw, int hbh) {
     super(pv, vx, vy, hbw, hbh);
   }
 
-  void attack(char side) {
+  void attack() {
     if (this.attackAvailable) {
       this.attackAvailable = false;
 
-      this.velocityX -= 3;
-      this.velocityY -= 3;
-
       PVector pv = new PVector(this.positionVector.x + this.hitboxWidth, this.positionVector.y);
-      attacksList.add(new Attack(pv, 0, 0, 50, this.hitboxHeight, side));
+
+      attacksList.add(new Attack(pv, 0, 0, 50, this.hitboxHeight, 500)); //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight
+    }
+  }
+
+  void bulletAttack() {
+    if (this.bulletAttackAvailable) {
+      this.bulletAttackAvailable = false;
+      
+      PVector pv;
+      if(mouseX < this.positionVector.x) {
+        pv = new PVector(this.positionVector.x, this.positionVector.y);
+      } else {
+        pv = new PVector(this.positionVector.x + this.hitboxWidth, this.positionVector.y);
+      }
+
+      attacksList.add(new BulletAttack(pv, 5, 0, 15, 8, 1500)); //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight
     }
   }
 
@@ -114,11 +196,15 @@ class Player extends Entity {
       Attack attack = attacksList.get(i);
 
       if (!attack.update(this.positionVector, this.hitboxWidth)) {
-        this.attackAvailable = true;
-        this.attacksList.remove(i);
+        if(attack.getClass() == Attack.class) {
+           this.attackAvailable = true; 
+        } else {
+            this.bulletAttackAvailable = true;
+        }
+        this.attacksList.remove(i); 
 
-        this.velocityX += 3;
-        this.velocityY += 3;
+        //this.velocityX += 3;
+        //this.velocityY += 3;
       }
     }
   }
@@ -127,60 +213,95 @@ class Player extends Entity {
 class Enemy extends Entity {
   float hp, maxHp, acceleration;
 
-  public Enemy(PVector pv, int vx, int vy, int hbw, int hbh, float hp) {
+  public Enemy(PVector pv, float vx, float vy, int hbw, int hbh, float hp) {
     super(pv, vx, vy, hbw, hbh);
     this.hp = hp;
     this.maxHp = hp;
-    this.acceleration = 1;
+    this.acceleration = 0.6;
   }
 
-  void move(Entity target, Entity enemie) {
-    float nextX = this.positionVector.x;
-    float nextY = this.positionVector.y;
-    
-    if(this.velocityX + this.acceleration >= 3) {
-      this.velocityX = 3;
-    } else {
-      this.velocityX += this.acceleration;
-    }
-    
-    if(this.velocityY + this.acceleration >= 3) {
-      this.velocityY = 3;
-    } else {
-      this.velocityY += this.acceleration;
-    }
+void move(Entity target, ArrayList<Enemy> allEnemies) {
+  float nextX = this.positionVector.x;
+  float nextY = this.positionVector.y;
 
-    // Movimento em X
-    if (target.positionVector.x > this.positionVector.x) {
-      nextX += this.velocityX;
-    } else if (target.positionVector.x < this.positionVector.x) {
-      nextX -= this.velocityX;
-    }
-
-    if (!checkCollisionX(target, nextX) || !checkCollisionX(enemie, nextX)) {
-      this.positionVector.x = nextX;
-    } else {
-      this.velocityX = -7;
-      this.positionVector.x = nextX;
-    }
-
-    // Movimento em Y
-    if (target.positionVector.y > this.positionVector.y) {
-      nextY += this.velocityY;
-    } else if (target.positionVector.y < this.positionVector.y) {
-      nextY -= this.velocityY;
-    }
-
-    if (!checkCollisionY(target, nextY) || !checkCollisionY(enemie, nextY)) {
-      this.positionVector.y = nextY;
-    } else {
-      this.velocityY = -7;
-      this.positionVector.y = nextY;
-    }
-
-    this.desenhar();
+  // Aceleração controlada
+  if (this.velocityX + this.acceleration >= 1.5) {
+    this.velocityX = 1.5;
+  } else {
+    this.velocityX += this.acceleration;
   }
-  
+
+  if (this.velocityY + this.acceleration >= 1.5) {
+    this.velocityY = 1.5;
+  } else {
+    this.velocityY += this.acceleration;
+  }
+
+  // Projeção de posição X
+  if (target.positionVector.x > this.positionVector.x) {
+    nextX += this.velocityX;
+  } else if (target.positionVector.x < this.positionVector.x) {
+    nextX -= this.velocityX;
+  }
+
+  boolean collidesWithEnemyX = false;
+  for (Enemy other : allEnemies) {
+    if (other != this) {
+      if (checkCollisionX(other, nextX, this.positionVector.y)) {
+        collidesWithEnemyX = true;
+
+        // Se já está colidindo no X, empurra levemente:
+        if (this.positionVector.x < other.positionVector.x) {
+          this.positionVector.x -= 1;
+        } else {
+          this.positionVector.x += 1;
+        }
+      }
+    }
+  }
+
+  if (!checkCollisionX(target, nextX, this.positionVector.y) && !collidesWithEnemyX) {
+    this.positionVector.x = nextX;
+  } else if (checkCollisionX(target, nextX, this.positionVector.y)) {
+    this.velocityX = -7;
+    this.positionVector.x = nextX;
+  }
+
+  // Projeção de posição Y
+  if (target.positionVector.y > this.positionVector.y) {
+    nextY += this.velocityY;
+  } else if (target.positionVector.y < this.positionVector.y) {
+    nextY -= this.velocityY;
+  }
+
+  boolean collidesWithEnemyY = false;
+  for (Enemy other : allEnemies) {
+    if (other != this) {
+      if (checkCollisionY(other, this.positionVector.x, nextY)) {
+        collidesWithEnemyY = true;
+
+        // Se já está colidindo no Y, empurra levemente:
+        if (this.positionVector.y < other.positionVector.y) {
+          this.positionVector.y -= 1;
+        } else {
+          this.positionVector.y += 1;
+        }
+      }
+    }
+  }
+
+  if (!checkCollisionY(target, this.positionVector.x, nextY) && !collidesWithEnemyY) {
+    this.positionVector.y = nextY;
+  } else if (checkCollisionY(target, this.positionVector.x, nextY)) {
+    this.velocityY = -7;
+    this.positionVector.y = nextY;
+  }
+
+  this.desenhar();
+}
+
+
+
   void checkAttack(Attack attack) {
     float nextX = this.positionVector.x;
     float nextY = this.positionVector.y;
@@ -220,7 +341,7 @@ class Enemy extends Entity {
       this.positionVector.y + this.hitboxHeight > target.positionVector.y
       );
   }
-  
+
   boolean checkCollisionX(Attack target, float nextX) {
     return (
       nextX < target.positionVector.x + target.hitboxWidth &&
@@ -238,7 +359,7 @@ class Enemy extends Entity {
       nextY + this.hitboxHeight > target.positionVector.y
       );
   }
-  
+
   boolean checkCollisionY(Attack target, float nextY) {
     return (
       this.positionVector.x < target.positionVector.x + target.hitboxWidth &&
@@ -247,9 +368,9 @@ class Enemy extends Entity {
       nextY + this.hitboxHeight > target.positionVector.y
       );
   }
-  
+
   boolean isAlive() {
-    if(this.hp <= 0) {
+    if (this.hp <= 0) {
       return false;
     }
     return true;
