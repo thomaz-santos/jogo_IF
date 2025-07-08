@@ -1,11 +1,12 @@
 int gameState = 0;
 MenuManager menuManager;
 
+
 Timer t = new Timer(5000);
 //Timer gameTime = new Timer(10000);
 
 float velocidadeMax;
-boolean moveUp, moveDown, moveRight, moveLeft, attackPressed, quitGame;
+boolean moveUp, moveDown, moveRight, moveLeft, attackPressed, dashPressed, quitGame;
 char lastSide;
 PVector pv;
 Player p;
@@ -16,6 +17,7 @@ boolean initialTime;
 
 void setup() {
   size(1600, 900);
+  
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
   
@@ -37,8 +39,11 @@ void draw() {
 
   case 1:
     if (initialTime) {
-      gameTimer = new GameTimer(10);
+      gameTimer = new GameTimer(30);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
+      p.reset();
+      crowd.reset();
+      
       
       initialTime = false;
     }
@@ -56,11 +61,16 @@ void draw() {
         p.bulletAttack();
       }
     }
+    
+    if(dashPressed) {
+      p.dash(moveUp, moveDown, moveRight, moveLeft);
+    }
 
 
     crowd.update(p);
-
+    
     p.updateAttacks();
+    p.updateDash();
     p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
     //e.move(p);
 
@@ -128,6 +138,10 @@ void keyPressed() {
     moveRight = true;
     lastSide = 'r';
     break;
+    
+  case ' ':
+    dashPressed = true;
+    break;
 
   case 'p':
     quitGame = true;
@@ -154,6 +168,10 @@ void keyReleased() {
 
   case 'd':
     moveRight = false;
+    break;
+    
+  case ' ':
+    dashPressed = false;
     break;
 
   case 'p':
