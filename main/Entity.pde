@@ -159,11 +159,16 @@ class Player extends Entity {
   ArrayList<Attack> attacksList = new ArrayList<Attack>();
   boolean attackAvailable = true;
   boolean bulletAttackAvailable = true;
+  ArrayList<Dash> dashList = new ArrayList<Dash>();
+  boolean dashAvailable = true;
 
-
+  float baseVelocityX;
+  float baseVelocityY;
 
   public Player(PVector pv, float vx, float vy, int hbw, int hbh) {
     super(pv, vx, vy, hbw, hbh);
+    this.baseVelocityX = vx;
+    this.baseVelocityY = vy;
   }
 
   void attack() {
@@ -179,9 +184,9 @@ class Player extends Entity {
   void bulletAttack() {
     if (this.bulletAttackAvailable) {
       this.bulletAttackAvailable = false;
-      
+
       PVector pv;
-      if(mouseX < this.positionVector.x) {
+      if (mouseX < this.positionVector.x) {
         pv = new PVector(this.positionVector.x, this.positionVector.y);
       } else {
         pv = new PVector(this.positionVector.x + this.hitboxWidth, this.positionVector.y);
@@ -196,17 +201,66 @@ class Player extends Entity {
       Attack attack = attacksList.get(i);
 
       if (!attack.update(this.positionVector, this.hitboxWidth)) {
-        if(attack.getClass() == Attack.class) {
-           this.attackAvailable = true; 
+        if (attack.getClass() == Attack.class) {
+          this.attackAvailable = true;
         } else {
-            this.bulletAttackAvailable = true;
+          this.bulletAttackAvailable = true;
         }
-        this.attacksList.remove(i); 
+        this.attacksList.remove(i);
 
         //this.velocityX += 3;
         //this.velocityY += 3;
       }
     }
+  }
+
+  void dash(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft) {
+    if (this.dashAvailable) {
+      int dashSpeed = 30;
+
+      int vx, vy;
+      if (moveUp) {
+        vy = dashSpeed*(-1);
+      } else {
+        vy = dashSpeed;
+      }
+
+      if (moveLeft) {
+        vx = dashSpeed*(-1);
+      } else {
+        vx = dashSpeed;
+      }
+
+      this.dashList.add(new Dash(vx, vy, 50));
+      this.dashAvailable = false;//int vx, int vy, int duration
+    }
+  }
+  
+  void updateDash() {
+    
+    if(!this.dashList.isEmpty()) {
+      Dash dash = dashList.get(0);
+      
+      if(dash.isActive()) {
+        this.velocityX = dash.velocityX;
+        this.velocityY = dash.velocityY;
+        return;
+      }
+      
+      this.velocityX = this.baseVelocityX;
+      this.velocityY = this.baseVelocityY;
+      dashList.clear();
+      this.dashAvailable = true;
+      return;
+    }
+  }
+
+  void reset() {
+    this.hp = this.maxHp;
+    this.positionVector.x = width/2;
+    this.positionVector.y = height/2;
+    this.attacksList.clear();
+    this.points = 0;
   }
 }
 
@@ -220,85 +274,85 @@ class Enemy extends Entity {
     this.acceleration = 0.6;
   }
 
-void move(Entity target, ArrayList<Enemy> allEnemies) {
-  float nextX = this.positionVector.x;
-  float nextY = this.positionVector.y;
+  void move(Entity target, ArrayList<Enemy> allEnemies) {
+    float nextX = this.positionVector.x;
+    float nextY = this.positionVector.y;
 
-  // Aceleração controlada
-  if (this.velocityX + this.acceleration >= 1.5) {
-    this.velocityX = 1.5;
-  } else {
-    this.velocityX += this.acceleration;
-  }
+    // Aceleração controlada
+    if (this.velocityX + this.acceleration >= 1.5) {
+      this.velocityX = 1.5;
+    } else {
+      this.velocityX += this.acceleration;
+    }
 
-  if (this.velocityY + this.acceleration >= 1.5) {
-    this.velocityY = 1.5;
-  } else {
-    this.velocityY += this.acceleration;
-  }
+    if (this.velocityY + this.acceleration >= 1.5) {
+      this.velocityY = 1.5;
+    } else {
+      this.velocityY += this.acceleration;
+    }
 
-  // Projeção de posição X
-  if (target.positionVector.x > this.positionVector.x) {
-    nextX += this.velocityX;
-  } else if (target.positionVector.x < this.positionVector.x) {
-    nextX -= this.velocityX;
-  }
+    // Projeção de posição X
+    if (target.positionVector.x > this.positionVector.x) {
+      nextX += this.velocityX;
+    } else if (target.positionVector.x < this.positionVector.x) {
+      nextX -= this.velocityX;
+    }
 
-  boolean collidesWithEnemyX = false;
-  for (Enemy other : allEnemies) {
-    if (other != this) {
-      if (checkCollisionX(other, nextX, this.positionVector.y)) {
-        collidesWithEnemyX = true;
+    boolean collidesWithEnemyX = false;
+    for (Enemy other : allEnemies) {
+      if (other != this) {
+        if (checkCollisionX(other, nextX, this.positionVector.y)) {
+          collidesWithEnemyX = true;
 
-        // Se já está colidindo no X, empurra levemente:
-        if (this.positionVector.x < other.positionVector.x) {
-          this.positionVector.x -= 1;
-        } else {
-          this.positionVector.x += 1;
+          // Se já está colidindo no X, empurra levemente:
+          if (this.positionVector.x < other.positionVector.x) {
+            this.positionVector.x -= 1;
+          } else {
+            this.positionVector.x += 1;
+          }
         }
       }
     }
-  }
 
-  if (!checkCollisionX(target, nextX, this.positionVector.y) && !collidesWithEnemyX) {
-    this.positionVector.x = nextX;
-  } else if (checkCollisionX(target, nextX, this.positionVector.y)) {
-    this.velocityX = -7;
-    this.positionVector.x = nextX;
-  }
+    if (!checkCollisionX(target, nextX, this.positionVector.y) && !collidesWithEnemyX) {
+      this.positionVector.x = nextX;
+    } else if (checkCollisionX(target, nextX, this.positionVector.y)) {
+      this.velocityX = -7;
+      this.positionVector.x = nextX;
+    }
 
-  // Projeção de posição Y
-  if (target.positionVector.y > this.positionVector.y) {
-    nextY += this.velocityY;
-  } else if (target.positionVector.y < this.positionVector.y) {
-    nextY -= this.velocityY;
-  }
+    // Projeção de posição Y
+    if (target.positionVector.y > this.positionVector.y) {
+      nextY += this.velocityY;
+    } else if (target.positionVector.y < this.positionVector.y) {
+      nextY -= this.velocityY;
+    }
 
-  boolean collidesWithEnemyY = false;
-  for (Enemy other : allEnemies) {
-    if (other != this) {
-      if (checkCollisionY(other, this.positionVector.x, nextY)) {
-        collidesWithEnemyY = true;
+    boolean collidesWithEnemyY = false;
+    for (Enemy other : allEnemies) {
+      if (other != this) {
+        if (checkCollisionY(other, this.positionVector.x, nextY)) {
+          collidesWithEnemyY = true;
 
-        // Se já está colidindo no Y, empurra levemente:
-        if (this.positionVector.y < other.positionVector.y) {
-          this.positionVector.y -= 1;
-        } else {
-          this.positionVector.y += 1;
+          // Se já está colidindo no Y, empurra levemente:
+          if (this.positionVector.y < other.positionVector.y) {
+            this.positionVector.y -= 1;
+          } else {
+            this.positionVector.y += 1;
+          }
         }
       }
     }
-  }
 
-  if (!checkCollisionY(target, this.positionVector.x, nextY) && !collidesWithEnemyY) {
-    this.positionVector.y = nextY;
-  } else if (checkCollisionY(target, this.positionVector.x, nextY)) {
-    this.velocityY = -7;
-    this.positionVector.y = nextY;
-  }
+    if (!checkCollisionY(target, this.positionVector.x, nextY) && !collidesWithEnemyY) {
+      this.positionVector.y = nextY;
+    } else if (checkCollisionY(target, this.positionVector.x, nextY)) {
+      this.velocityY = -7;
+      this.positionVector.y = nextY;
+    }
 
-  this.desenhar();
-}
+    this.desenhar();
+  }
 
 
 
