@@ -64,3 +64,23 @@ class BulletAttack extends Attack {
     return this.active;
   }
 }
+
+class Dash {
+  int velocityX, velocityY;
+  Timer t;
+  boolean active = true;
+  
+  public Dash(int vx, int vy, int duration) {
+    this.velocityX = vx;
+    this.velocityY = vy;
+    this.t = new Timer(duration);
+  }
+  
+  boolean isActive() {
+    if(t.disparou()) {
+      this.active = false;
+    }
+    
+    return this.active;
+  }
+}
