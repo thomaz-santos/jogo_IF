@@ -42,7 +42,7 @@ class Crowd {
       }
       if (!enemy.isAlive()) {
         this.enemiesList.remove(enemy);
-        player.points += 10;
+        player.experience += 10;
       }
     }
   }
