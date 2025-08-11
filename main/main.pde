@@ -41,9 +41,8 @@ void draw() {
     if (initialTime) {
       gameTimer = new GameTimer(30);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
-      p.reset();
-      crowd.reset();
-      
+      //p.reset();
+      //crowd.reset();
       
       initialTime = false;
     }
