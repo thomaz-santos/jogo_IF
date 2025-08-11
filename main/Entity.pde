@@ -6,7 +6,8 @@ class Entity {
   float velocityY;
   boolean collision, hittable;
   int hittableCooldown;
-  int points;
+  int experience;
+  int level;
   float hp, maxHp;
   int lastHit;
 
@@ -19,7 +20,7 @@ class Entity {
     this.velocityX = vx;
     this.velocityY = vy;
 
-    points = 0;
+    experience = 0;
 
     maxHp = 100;
     hp = maxHp;
@@ -134,7 +135,7 @@ class Entity {
     //Pontos do jogador
     fill(58, 207, 117);
     textAlign(LEFT);
-    text("Pontos: " + this.points, width*0.001, height*0.04);
+    text("Pontos: " + this.experience, width*0.001, height*0.04);
 
     //Hitbox do jogador
     if (hittable) {
@@ -162,13 +163,13 @@ class Player extends Entity {
   ArrayList<Dash> dashList = new ArrayList<Dash>();
   boolean dashAvailable = true;
 
-  float baseVelocityX;
-  float baseVelocityY;
+  float baseVelocity;
+
 
   public Player(PVector pv, float vx, float vy, int hbw, int hbh) {
     super(pv, vx, vy, hbw, hbh);
-    this.baseVelocityX = vx;
-    this.baseVelocityY = vy;
+    this.baseVelocity = vx;
+    this.baseVelocity = vy;
   }
 
   void attack() {
@@ -235,20 +236,20 @@ class Player extends Entity {
       this.dashAvailable = false;//int vx, int vy, int duration
     }
   }
-  
+
   void updateDash() {
-    
-    if(!this.dashList.isEmpty()) {
+
+    if (!this.dashList.isEmpty()) {
       Dash dash = dashList.get(0);
-      
-      if(dash.isActive()) {
+
+      if (dash.isActive()) {
         this.velocityX = dash.velocityX;
         this.velocityY = dash.velocityY;
         return;
       }
-      
-      this.velocityX = this.baseVelocityX;
-      this.velocityY = this.baseVelocityY;
+
+      this.velocityX = this.baseVelocity;
+      this.velocityY = this.baseVelocity;
       dashList.clear();
       this.dashAvailable = true;
       return;
@@ -260,7 +261,7 @@ class Player extends Entity {
     this.positionVector.x = width/2;
     this.positionVector.y = height/2;
     this.attacksList.clear();
-    this.points = 0;
+    this.experience = 0;
   }
 }
 
@@ -315,10 +316,15 @@ class Enemy extends Entity {
     }
 
     if (!checkCollisionX(target, nextX, this.positionVector.y) && !collidesWithEnemyX) {
-      this.positionVector.x = nextX;
+      PVector des = target.positionVector.copy();
+      des.sub(this.positionVector);
+      des.setMag(this.velocityX);
+      this.positionVector.add(des);
     } else if (checkCollisionX(target, nextX, this.positionVector.y)) {
-      this.velocityX = -7;
-      this.positionVector.x = nextX;
+      PVector des = target.positionVector.copy();
+      des.sub(this.positionVector);
+      des.setMag(this.velocityX * -1);
+      this.positionVector.add(des);
     }
 
     // Projeção de posição Y
@@ -345,10 +351,15 @@ class Enemy extends Entity {
     }
 
     if (!checkCollisionY(target, this.positionVector.x, nextY) && !collidesWithEnemyY) {
-      this.positionVector.y = nextY;
+      PVector des = target.positionVector.copy();
+      des.sub(this.positionVector);
+      des.setMag(this.velocityY);
+      this.positionVector.add(des);
     } else if (checkCollisionY(target, this.positionVector.x, nextY)) {
-      this.velocityY = -7;
-      this.positionVector.y = nextY;
+      PVector des = target.positionVector.copy();
+      des.sub(this.positionVector);
+      des.setMag(this.velocityY * -1);
+      this.positionVector.add(des);
     }
 
     this.desenhar();
