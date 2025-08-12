@@ -17,24 +17,24 @@ boolean initialTime;
 
 void setup() {
   size(1600, 900);
-  
+
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
-  
+
   pv = new PVector(width/2, height/2);
   p = new Player(pv, 4.5, 4.5, 50, 60); //PVector pv, float vx, float vy, int hbw, int hbh
-  
+
   crowd = new Crowd(10, p);
 }
 
 void draw() {
   switch(gameState) {
-  case 0:  
+  case 0:
     background(200);
     menuManager.createInitialMenu();
     gameState = menuManager.update(gameState);
     initialTime = true;
-    
+
     break;
 
   case 1:
@@ -43,10 +43,10 @@ void draw() {
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
       //p.reset();
       //crowd.reset();
-      
+
       initialTime = false;
     }
-    
+
     background(80);
 
     if (crowd.enemiesList.isEmpty()) {
@@ -60,18 +60,14 @@ void draw() {
         p.bulletAttack();
       }
     }
-    
-    if(dashPressed) {
-      p.dash(moveUp, moveDown, moveRight, moveLeft);
-    }
 
 
     crowd.update(p);
-    
+
     p.updateAttacks();
-    p.updateDash();
+    p.dash(moveUp, moveDown, moveRight, moveLeft, dashPressed);
     p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
-    //e.move(p);
+    dashPressed = false;
 
     gameTimer.update();
     gameTimer.draw();
@@ -79,8 +75,8 @@ void draw() {
     if (!p.isAlive() || !gameTimer.isActive()) {
       gameState = 4;
     }
-    
-    if(quitGame) {
+
+    if (quitGame) {
       gameState = 0;
     }
     break;
@@ -90,7 +86,7 @@ void draw() {
     menuManager.createOptionsMenu();
     gameState = menuManager.update(gameState);
     break;
-    
+
   case 3:
     background(200);
     menuManager.createCreditsMenu();
@@ -137,7 +133,7 @@ void keyPressed() {
     moveRight = true;
     lastSide = 'r';
     break;
-    
+
   case ' ':
     dashPressed = true;
     break;
@@ -168,10 +164,10 @@ void keyReleased() {
   case 'd':
     moveRight = false;
     break;
-    
-  case ' ':
-    dashPressed = false;
-    break;
+
+  //case ' ':
+  //  dashPressed = false;
+  //  break;
 
   case 'p':
     quitGame = false;
