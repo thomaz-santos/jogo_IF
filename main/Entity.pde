@@ -16,6 +16,7 @@ class Entity {
     this.velocityY = vy;
 
     this.experience = 0;
+    this.level = 1;
     this.maxHp = 100;
     this.hp = maxHp;
     this.hittable = true;
@@ -282,7 +283,9 @@ class Player extends Entity {
       PVector pv = (mouseX < positionVector.x)
         ? new PVector(positionVector.x, positionVector.y)
         : new PVector(positionVector.x + hitboxWidth, positionVector.y);
-
+      
+              
+      //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration
       attacksList.add(new BulletAttack(pv, 5, 0, 15, 8, 1500));
     }
   }
@@ -336,7 +339,10 @@ class Player extends Entity {
   }
   
   void manageLevel() {
-    
+    if(this.experience >= this.level*20) {
+      this.level++;
+      this.experience = 0;
+    }
   }
   
   @Override
@@ -344,7 +350,7 @@ class Player extends Entity {
     // Pontos do jogador
     fill(58, 207, 117);
     textAlign(LEFT);
-    text("Pontos: " + experience, width * 0.001, height * 0.04);
+    text("Pontos: " + experience, 10, height * 0.04);
 
     // Hitbox do jogador
     if (hittable) fill(7, 138, 65, 255);
@@ -352,17 +358,25 @@ class Player extends Entity {
     rect(positionVector.x, positionVector.y, hitboxWidth, hitboxHeight);
 
     // Barra de vida do jogador
-    float currentHp = map(hp, 0, maxHp, 0, 200);
+    float currentHp = map(hp, 0, maxHp, 0, width*0.15);
     fill(186, 7, 7);
-    rect(10, 60, 200, 20);
+    rect(10, 60, width*0.15, 20);
     fill(58, 207, 117);
     rect(10, 60, currentHp, 20);
     
+    //Nivel do jogador
+    fill(58, 207, 117);
+    textAlign(LEFT);
+    text(level, width*0.95, height * 0.04);
+    
     //Barra de nível do Jogador
+    this.manageLevel();
+    
+    float currentXp = map(this.experience, 0, level*20, 0, width*0.4);
     fill(186, 7, 7);
-    rect(width*0.25, 60, width*0.35, 20);
+    rect(width*0.3, 60, width*0.4, 20);
     fill(10, 40, 200);
-    rect(width*0.25, 60, width*0.35, 20);
+    rect(width*0.3, 60, currentXp, 20);
   }
 }
 
