@@ -16,7 +16,7 @@ GameTimer gameTimer;
 boolean initialTime;
 
 void setup() {
-  size(1600, 900);
+  size(1200, 800);
 
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
