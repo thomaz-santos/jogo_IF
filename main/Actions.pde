@@ -43,6 +43,8 @@ class Attack {
 }
 
 class BulletAttack extends Attack {
+  PVector mousePosition;
+  
   
   public BulletAttack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration) {
     super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration);
@@ -50,15 +52,25 @@ class BulletAttack extends Attack {
     if(mouseX < positionVector.x) {
       this.velocityX *= -1;
     }
+    this.mousePosition = new PVector(mouseX, mouseY);
   }
   
   boolean update(PVector targetVector, int targetWidth) {
+    /*if (!checkCollisionY(target, positionVector.x, nextY) && !collidesWithEnemyY) {
+      PVector des = target.positionVector.copy().sub(positionVector).setMag(velocityY);
+      positionVector.add(des);
+    } else if (checkCollisionY(target, positionVector.x, nextY)) {
+      PVector des = target.positionVector.copy().sub(positionVector).setMag(-velocityY);
+      positionVector.add(des);
+    }*/
+    
     if (t.disparou()) {
       this.active = false;
       return this.active;
     }
-
-    this.positionVector.x += this.velocityX;
+    
+    PVector des = this.mousePosition.copy().sub(this.positionVector).setMag(velocityX);
+    this.positionVector.add(des);
 
     this.desenhar();
     return this.active;
