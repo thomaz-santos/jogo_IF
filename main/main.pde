@@ -13,7 +13,7 @@ Player p;
 
 Crowd crowd;
 GameTimer gameTimer;
-boolean initialTime;
+boolean initialTime  = true;
 
 void setup() {
   size(1200, 800);
@@ -33,13 +33,12 @@ void draw() {
     background(200);
     menuManager.createInitialMenu();
     gameState = menuManager.update(gameState);
-    initialTime = true;
 
     break;
 
   case 1:
     if (initialTime) {
-      gameTimer = new GameTimer(30);
+      gameTimer = new GameTimer(60);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
       //p.reset();
       //crowd.reset();
@@ -47,30 +46,34 @@ void draw() {
       initialTime = false;
     }
 
-    background(80);
+    if (!gameTimer.paused) {
+      background(80);
 
-    if (crowd.enemiesList.isEmpty()) {
-      crowd.create(p);
-    }
-
-    if (attackPressed) {
-      if (mouseButton == LEFT) {
-        p.attack();
-      } else {
-        p.bulletAttack();
+      if (crowd.enemiesList.isEmpty()) {
+        crowd.create(p);
       }
+
+      if (attackPressed) {
+        if (mouseButton == LEFT) {
+          p.attack();
+        } else {
+          p.bulletAttack();
+        }
+      }
+
+
+      crowd.update(p);
+
+      p.updateAttacks();
+      p.dash(moveUp, moveDown, moveRight, moveLeft, dashPressed);
+      p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
+      dashPressed = false;
+
+      gameTimer.update();
+      gameTimer.draw();
+    } else {
+      text("Pausado", width/2, height/2);
     }
-
-
-    crowd.update(p);
-
-    p.updateAttacks();
-    p.dash(moveUp, moveDown, moveRight, moveLeft, dashPressed);
-    p.move(moveUp, moveDown, moveRight, moveLeft, crowd.enemiesList);
-    dashPressed = false;
-
-    gameTimer.update();
-    gameTimer.draw();
 
     if (!p.isAlive() || !gameTimer.isActive()) {
       gameState = 4;
@@ -139,7 +142,12 @@ void keyPressed() {
     break;
 
   case 'p':
-    quitGame = true;
+    if(!gameTimer.paused) {
+      gameTimer.pause();
+    } else {
+      gameTimer.resume();
+    }
+    
     break;
 
   case 'n':
@@ -163,14 +171,6 @@ void keyReleased() {
 
   case 'd':
     moveRight = false;
-    break;
-
-  //case ' ':
-  //  dashPressed = false;
-  //  break;
-
-  case 'p':
-    quitGame = false;
     break;
   }
 }
