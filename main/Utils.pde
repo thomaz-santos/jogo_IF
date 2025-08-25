@@ -23,6 +23,7 @@ class GameTimer {
   int endTime;
   int currentTime;
   boolean active = true;
+  boolean paused = false;
 
   public GameTimer(int d) {
     this.duration = d*1000;
@@ -32,13 +33,25 @@ class GameTimer {
   }
 
   void update() {
-    this.currentTime = millis();
+    if (!this.paused) {
+      this.currentTime = millis();
 
-    if (this.currentTime >= endTime) {
-      this.active = false;
+      if (this.currentTime >= endTime) {
+        this.active = false;
+      }
+
+      this.draw();
+    } else {
+      this.draw();
     }
+  }
 
-    this.draw();
+  void pause() {
+    this.paused = true;
+  }
+
+  void resume() {
+    this.paused = false;
   }
 
   boolean isActive() {
@@ -47,6 +60,6 @@ class GameTimer {
 
   void draw() {
     fill(240, 255, 246);
-    text(this.currentTime/1000, width/2, 30);
+    text(this.currentTime/1000, width/2, height*0.08);
   }
 }
