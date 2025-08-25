@@ -286,7 +286,7 @@ class Player extends Entity {
       
               
       //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration
-      attacksList.add(new BulletAttack(pv, 5, 0, 15, 8, 1500));
+      attacksList.add(new BulletAttack(pv, 10, 0, 15, 8, 500));
     }
   }
 
@@ -342,6 +342,12 @@ class Player extends Entity {
     if(this.experience >= this.level*20) {
       this.level++;
       this.experience = 0;
+      
+      if(this.hp * 1.1 >= this.maxHp) {
+        this.hp = maxHp;
+      } else {
+        this.hp += this.maxHp*0.2;
+      }
     }
   }
   
