@@ -63,3 +63,16 @@ class GameTimer {
     text(this.currentTime/1000, width/2, height*0.08);
   }
 }
+
+void ajustarCamera(Player p1, float margem)
+{
+  if (cameraX<p1.positionVector.x+p1.hitboxWidth+margem-width)
+    cameraX=p1.positionVector.x+p1.hitboxWidth+margem-width;
+  if (cameraX>p1.positionVector.x-margem)
+    cameraX=p1.positionVector.x-margem;
+
+  if (cameraY<p1.positionVector.y+p1.hitboxHeight+margem-height)
+    cameraY=p1.positionVector.y+p1.hitboxHeight+margem-height;
+  if (cameraY>p1.positionVector.y-margem)
+    cameraY=p1.positionVector.y-margem;
+}
