@@ -1,6 +1,7 @@
 int gameState = 0;
 MenuManager menuManager;
 
+float cameraX, cameraY;
 
 Timer t = new Timer(5000);
 //Timer gameTime = new Timer(10000);
@@ -17,6 +18,8 @@ boolean initialTime  = true;
 
 void setup() {
   size(1200, 800);
+  cameraX = 0;
+  cameraY = 0;
 
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
@@ -47,6 +50,7 @@ void draw() {
     }
 
     if (!gameTimer.paused) {
+      
       background(80);
 
       if (crowd.enemiesList.isEmpty()) {
@@ -71,6 +75,8 @@ void draw() {
 
       gameTimer.update();
       gameTimer.draw();
+      
+      ajustarCamera(p, 100);
     } else {
       text("Pausado", width/2, height/2);
     }
