@@ -22,7 +22,7 @@ class Attack {
       return this.active;
     }
 
-    if (mouseX <= targetVector.x) {
+    if (mouseX <= targetVector.x - cameraX) {
       this.positionVector.x = targetVector.x - targetWidth;
       this.positionVector.y = targetVector.y;
     } else {
@@ -37,7 +37,7 @@ class Attack {
   void desenhar() {
     noFill();
     stroke(255, 0, 0);
-    rect(this.positionVector.x, this.positionVector.y, this.hitboxWidth, this.hitboxHeight);
+    rect(this.positionVector.x - cameraX, this.positionVector.y - cameraY, this.hitboxWidth, this.hitboxHeight);
     stroke(0);
   }
 }
@@ -50,7 +50,7 @@ class BulletAttack extends Attack {
     super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration);
     
      
-    this.mousePosition = new PVector(mouseX, mouseY);
+    this.mousePosition = new PVector(mouseX - cameraX, mouseY - cameraY);
   }
   
   @Override 
