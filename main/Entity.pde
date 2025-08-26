@@ -361,7 +361,7 @@ class Player extends Entity {
     // Hitbox do jogador
     if (hittable) fill(7, 138, 65, 255);
     else fill(7, 138, 65, 120);
-    rect(positionVector.x, positionVector.y, hitboxWidth, hitboxHeight);
+    rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
 
     // Barra de vida do jogador
     float currentHp = map(hp, 0, maxHp, 0, width*0.15);
@@ -513,13 +513,14 @@ class Enemy extends Entity {
 
   void desenhar() {
     float currentHp = map(hp, 0, maxHp, 0, hitboxWidth);
-    fill(200, 110, 197);
-    rect(positionVector.x, positionVector.y, hitboxWidth, hitboxHeight);
-
     fill(240, 0, 0);
-    rect(positionVector.x, positionVector.y + (hitboxHeight * 1.1), hitboxWidth, 5);
+    rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, hitboxWidth, 5);
 
     fill(0, 240, 0);
-    rect(positionVector.x, positionVector.y + (hitboxHeight * 1.1), currentHp, 5);
+    rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, currentHp, 5);
+    
+    //hitbox
+    fill(200, 110, 197);
+    rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
   }
 }
