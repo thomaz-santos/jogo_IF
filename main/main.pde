@@ -16,6 +16,13 @@ Crowd crowd;
 GameTimer gameTimer;
 boolean initialTime  = true;
 
+
+Camada fundo;
+Camada colisao;
+Camada frente;
+PImage tiles;
+
+
 void setup() {
   size(1200, 800);
   cameraX = 0;
@@ -24,8 +31,13 @@ void setup() {
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
 
+  tiles = loadImage("tileset.png");
+  fundo = new Camada(80, 80, "camadaFundo", 32, 32, tiles, 53);
+  colisao = new Camada(80, 80, "camadaMeio", 32, 32, tiles, 53);
+  frente = new Camada(80, 80, "camadaFrente", 32, 32, tiles, 53);
+
   pv = new PVector(width/2, height/2);
-  p = new Player(pv, 4.5, 4.5, 50, 60); //PVector pv, float vx, float vy, int hbw, int hbh
+  p = new Player(pv, 4.5, 4.5, 32, 32); //PVector pv, float vx, float vy, int hbw, int hbh
 
   crowd = new Crowd(10, p);
 }
@@ -51,8 +63,9 @@ void draw() {
 
     if (!gameTimer.paused) {
       
-      background(80);
-
+      background(200);
+      fundo.exibir(1);
+      colisao.exibir(1);
       if (crowd.enemiesList.isEmpty()) {
         crowd.create(p);
       }
@@ -65,7 +78,7 @@ void draw() {
         }
       }
 
-
+      
       crowd.update(p);
 
       p.updateAttacks();
@@ -76,6 +89,8 @@ void draw() {
       gameTimer.update();
       gameTimer.draw();
       
+      frente.exibir(1);
+            
       ajustarCamera(p, 100);
     } else {
       text("Pausado", width/2, height/2);
