@@ -49,8 +49,22 @@ class BulletAttack extends Attack {
   public BulletAttack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration) {
     super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration);
     
-     
-    this.mousePosition = new PVector(mouseX - cameraX, mouseY - cameraY);
+    
+    //float targetX, targetY;
+    
+    //if(positionVector.x < 0) {
+    //  targetX = positionVector.x - mouseX;
+    //} else {
+    //  targetX = positionVector.x + mouseX;
+    //}
+    
+    //if(positionVector.y < 0) {
+    //  targetY = positionVector.y - mouseY;
+    //} else {
+    //  targetY = positionVector.y + mouseY;
+    //}
+    
+    this.mousePosition = new PVector(mouseX, mouseY);
   }
   
   @Override 
