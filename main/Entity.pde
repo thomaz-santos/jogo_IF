@@ -104,6 +104,32 @@ class Entity {
       );
   }
 
+  boolean colidiuCenario(Camada colisao) {
+    int xi, xf, yi, yf;
+
+    xi= int(this.positionVector.x)/colisao.tLar;
+    xf= int(this.positionVector.x+this.hitboxWidth-1)/colisao.tLar;
+    yi= int(this.positionVector.y)/colisao.tAlt;
+    yf= int(this.positionVector.y+this.hitboxHeight-1)/colisao.tAlt;
+
+    if (xi<0)xi=0;
+    if (xi>colisao.lar-1) xi=colisao.lar-1;
+    if (xf<0)xf=0;
+    if (xf>colisao.lar-1) xf=colisao.lar-1;
+
+    if (yi<0)yi=0;
+    if (yi>colisao.alt-1) yi=colisao.alt-1;
+    if (yf<0)yf=0;
+    if (yf>colisao.alt-1) yf=colisao.alt-1;
+
+    for (int i=xi; i<=xf; i++) {
+      for (int j=yi; j<=yf; j++) {
+        if (colisao.get(j, i)!=-1) return true;
+      }
+    }
+    return false;
+  }
+
   void desenhar() {
     // Pontos do jogador
     fill(58, 207, 117);
@@ -134,9 +160,9 @@ class Player extends Entity {
   boolean dashAvailable = true;
 
   float baseVelocity;
-  float acceleration = 2.2;
-  float maxVelocity = 7;
-  float friction = 0.7;
+  float acceleration;
+  float maxVelocity;
+  float friction;
 
   int dashTimer = 0;          // frames restantes do dash
   int dashDuration = 16;      // duração do dash em frames
@@ -147,9 +173,15 @@ class Player extends Entity {
   float dashVy = 0;
   int dashSpeed = 15;
 
-  public Player(PVector pv, float vx, float vy, int hbw, int hbh) {
+  int attackDamage;
+
+  public Player(PVector pv, float vx, float vy, int hbw, int hbh, float maxV, float accele, float fric, int atkDmg) {
     super(pv, vx, vy, hbw, hbh);
     this.baseVelocity = vx; // corrigido para manter apenas vx (o vy original sobrescrevia)
+    this.maxVelocity = maxV;
+    this.acceleration = accele;
+    this.friction = fric;
+    this.attackDamage = atkDmg;
   }
 
   @Override
@@ -252,6 +284,16 @@ class Player extends Entity {
       }
     }
 
+    if (this.colidiuCenario(colisao)) {
+      {
+        if (moveRight) this.positionVector.x=this.positionVector.x-(this.positionVector.x+this.hitboxWidth)%colisao.tLar;
+        else if (moveLeft) this.positionVector.x = (int(this.positionVector.x)/colisao.tLar +1) *colisao.tLar; //x + colisao.tLar - (x+lar)%colisao.tLar;
+
+        if (moveDown) this.positionVector.y=this.positionVector.y-(this.positionVector.y+this.hitboxHeight)%colisao.tLar;
+        else if (moveUp) this.positionVector.y = (int(this.positionVector.y)/colisao.tLar +1) *colisao.tLar;
+      }
+    }
+
     // Colisão em Y
     for (Enemy target : enemiesCrowd) {
       if (!checkCollisionY(target, positionVector.x, nextY)) {
@@ -271,8 +313,16 @@ class Player extends Entity {
   void attack() {
     if (attackAvailable) {
       attackAvailable = false;
-      PVector pv = new PVector(positionVector.x + hitboxWidth, positionVector.y);
-      attacksList.add(new Attack(pv, 0, 0, 50, hitboxHeight, 500));
+      PVector pv;
+
+      if (mouseX > this.positionVector.x) {
+        pv = new PVector(positionVector.x + hitboxWidth, positionVector.y);
+      } else {
+        pv = new PVector(positionVector.x, positionVector.y);
+      }
+
+      attacksList.add(new Attack(pv, 0, 0, 30, hitboxHeight+10, 700, this.attackDamage));
+      //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int damage
     }
   }
 
@@ -283,10 +333,10 @@ class Player extends Entity {
       PVector pv = (mouseX < positionVector.x)
         ? new PVector(positionVector.x, positionVector.y)
         : new PVector(positionVector.x + hitboxWidth, positionVector.y);
-      
-              
+
+
       //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration
-      attacksList.add(new BulletAttack(pv, 10, 0, 15, 8, 500));
+      attacksList.add(new BulletAttack(pv, 10, 0, 15, 8, 500, this.attackDamage));
     }
   }
 
@@ -337,22 +387,23 @@ class Player extends Entity {
     attacksList.clear();
     experience = 0;
   }
-  
+
   void manageLevel() {
-    if(this.experience >= this.level*20) {
+    if (this.experience >= this.level*20) {
       this.level++;
       this.experience = 0;
-      
-      if(this.hp * 1.1 >= this.maxHp) {
+      this.attackDamage *= 1.2;
+
+      if (this.hp * 1.1 >= this.maxHp) {
         this.hp = maxHp;
       } else {
         this.hp += this.maxHp*0.2;
       }
     }
   }
-  
+
   @Override
-  void desenhar() {
+    void desenhar() {
     // Pontos do jogador
     fill(58, 207, 117);
     textAlign(LEFT);
@@ -363,21 +414,29 @@ class Player extends Entity {
     else fill(7, 138, 65, 120);
     rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
 
+    //Indicador de dash
+    if (dashAvailable) {
+      rectMode(CENTER);
+      fill(10, 50, 190);
+      rect((this.positionVector.x + this.hitboxWidth/2)-cameraX, (this.positionVector.y + this.hitboxHeight/2)-cameraY, this.hitboxWidth*0.4, this.hitboxHeight*0.4);
+      rectMode(CORNER);
+    }
+
     // Barra de vida do jogador
     float currentHp = map(hp, 0, maxHp, 0, width*0.15);
     fill(186, 7, 7);
     rect(10, 60, width*0.15, 20);
     fill(58, 207, 117);
     rect(10, 60, currentHp, 20);
-    
+
     //Nivel do jogador
     fill(58, 207, 117);
     textAlign(LEFT);
     text(level, width*0.95, height * 0.04);
-    
+
     //Barra de nível do Jogador
     this.manageLevel();
-    
+
     float currentXp = map(this.experience, 0, level*20, 0, width*0.4);
     fill(186, 7, 7);
     rect(width*0.3, 60, width*0.4, 20);
@@ -395,6 +454,10 @@ class Enemy extends Entity {
     this.hp = hp;
     this.maxHp = hp;
     this.acceleration = 0.6;
+
+    this.hittableCooldown = 1000;
+    this.hittable = true;
+    this.lastHit = 0;
   }
 
   void move(Entity target, ArrayList<Enemy> allEnemies) {
@@ -452,22 +515,33 @@ class Enemy extends Entity {
     float nextX = positionVector.x;
     float nextY = positionVector.y;
 
+    if (millis() > this.lastHit + this.hittableCooldown) {
+      hittable = true;
+    }
+
+
     if (attack.positionVector.x > positionVector.x) nextX += velocityX;
     else if (attack.positionVector.x < positionVector.x) nextX -= velocityX;
 
-    if (checkCollisionX(attack, nextX)) {
-      velocityX = -7;
-      positionVector.x = nextX;
-      hp -= 10;
+    if (checkCollisionX(attack, nextX) && hittable) {
+      this.velocityX = -7;
+      this.positionVector.x = nextX;
+      this.hp -= attack.damage;
+
+      this.hittable = false;
+      this.lastHit = millis();
     }
 
     if (attack.positionVector.y > positionVector.y) nextY += velocityY;
     else if (attack.positionVector.y < positionVector.y) nextY -= velocityY;
 
-    if (checkCollisionY(attack, nextY)) {
-      velocityY = -7;
-      positionVector.y = nextY;
-      hp -= 10;
+    if (checkCollisionY(attack, nextY) && hittable) {
+      this.velocityY = -7;
+      this.positionVector.y = nextY;
+      this.hp -= attack.damage;
+
+      this.hittable = false;
+      this.lastHit = millis();
     }
   }
 
@@ -518,9 +592,13 @@ class Enemy extends Entity {
 
     fill(0, 240, 0);
     rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, currentHp, 5);
-    
+
     //hitbox
-    fill(200, 110, 197);
+    if (hittable) {
+      fill(200, 110, 197);
+    } else {
+      fill(200, 110, 197, 100);
+    }
     rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
   }
 }
