@@ -24,7 +24,8 @@ PImage tiles;
 
 
 void setup() {
-  size(1200, 800);
+  //size(1000, 600);
+  fullScreen();
   cameraX = 0;
   cameraY = 0;
 
@@ -32,14 +33,15 @@ void setup() {
   //menuManager.createInitialMenu();
 
   tiles = loadImage("tileset.png");
-  fundo = new Camada(80, 80, "camadaFundo", 32, 32, tiles, 53);
-  colisao = new Camada(80, 80, "camadaMeio", 32, 32, tiles, 53);
-  frente = new Camada(80, 80, "camadaFrente", 32, 32, tiles, 53);
+  fundo = new Camada(80, 80, "camadaFundo", 32, 32, tiles, 55);
+  colisao = new Camada(80, 80, "camadaMeio", 32, 32, tiles, 55);
+  frente = new Camada(80, 80, "camadaFrente", 32, 32, tiles, 55);
 
   pv = new PVector(width/2, height/2);
-  p = new Player(pv, 4.5, 4.5, 32, 32); //PVector pv, float vx, float vy, int hbw, int hbh
+  p = new Player(pv, 3, 3, 32, 32, 5, 1.5, 0.3, 15);
+  //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
 
-  crowd = new Crowd(10, p);
+  crowd = new Crowd(p);
 }
 
 void draw() {
@@ -62,8 +64,8 @@ void draw() {
     }
 
     if (!gameTimer.paused) {
-      
-      background(200);
+
+      background(80);
       fundo.exibir(1);
       colisao.exibir(1);
       if (crowd.enemiesList.isEmpty()) {
@@ -78,7 +80,7 @@ void draw() {
         }
       }
 
-      
+
       crowd.update(p);
 
       p.updateAttacks();
@@ -88,9 +90,9 @@ void draw() {
 
       gameTimer.update();
       gameTimer.draw();
-      
+
       frente.exibir(1);
-            
+
       ajustarCamera(p, 100);
     } else {
       text("Pausado", width/2, height/2);
@@ -163,16 +165,13 @@ void keyPressed() {
     break;
 
   case 'p':
-    if(!gameTimer.paused) {
+    if (!gameTimer.paused) {
       gameTimer.pause();
     } else {
       gameTimer.resume();
     }
-    
-    break;
 
-  case 'n':
-    crowd = new Crowd((int) random(5, 10), p);
+    break;
   }
 }
 
