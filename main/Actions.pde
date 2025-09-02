@@ -4,13 +4,16 @@ class Attack {
   int hitboxWidth, hitboxHeight;
   Timer t;
   boolean active = false;
+  int damage;
 
-  public Attack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration) {
+  public Attack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
     this.positionVector = positionVector.copy();
     this.velocityX = velocityX;
     this.velocityY = velocityY;
     this.hitboxWidth = hitboxWidth;
     this.hitboxHeight = hitboxHeight;
+
+    this.damage = dmg;
 
     this.t = new Timer(duration);
     this.active = true;
@@ -23,7 +26,7 @@ class Attack {
     }
 
     if (mouseX <= targetVector.x - cameraX) {
-      this.positionVector.x = targetVector.x - targetWidth;
+      this.positionVector.x = targetVector.x - this.hitboxWidth;
       this.positionVector.y = targetVector.y;
     } else {
       this.positionVector.x = targetVector.x + targetWidth;
@@ -46,25 +49,11 @@ class BulletAttack extends Attack {
   PVector mousePosition;
   
   
-  public BulletAttack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration) {
-    super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration);
+  public BulletAttack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
+    super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration, dmg);
     
-    
-    //float targetX, targetY;
-    
-    //if(positionVector.x < 0) {
-    //  targetX = positionVector.x - mouseX;
-    //} else {
-    //  targetX = positionVector.x + mouseX;
-    //}
-    
-    //if(positionVector.y < 0) {
-    //  targetY = positionVector.y - mouseY;
-    //} else {
-    //  targetY = positionVector.y + mouseY;
-    //}
-    
-    this.mousePosition = new PVector(mouseX, mouseY);
+     
+    this.mousePosition = new PVector(mouseX - cameraX, mouseY - cameraY);
   }
   
   @Override 
