@@ -24,11 +24,10 @@ PImage tiles;
 
 
 void setup() {
-  //size(1000, 600);
-  fullScreen();
+  size(900, 700);
+  //fullScreen();
   cameraX = 0;
   cameraY = 0;
-
   menuManager = new MenuManager(gameState);
   //menuManager.createInitialMenu();
 
@@ -38,7 +37,7 @@ void setup() {
   frente = new Camada(80, 80, "camadaFrente", 32, 32, tiles, 55);
 
   pv = new PVector(width/2, height/2);
-  p = new Player(pv, 3, 3, 32, 32, 5, 1.5, 0.3, 15);
+  p = new Player(pv, 3, 3, 32, 32, 5, 1.5, 0.3, 30);
   //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
 
   crowd = new Crowd(p);
