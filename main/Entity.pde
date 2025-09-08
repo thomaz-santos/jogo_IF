@@ -392,7 +392,7 @@ class Player extends Entity {
     if (this.experience >= this.level*20) {
       this.level++;
       this.experience = 0;
-      this.attackDamage *= 1.2;
+      this.attackDamage *= 1.05;
 
       if (this.hp * 1.1 >= this.maxHp) {
         this.hp = maxHp;
@@ -530,6 +530,8 @@ class Enemy extends Entity {
 
       this.hittable = false;
       this.lastHit = millis();
+      
+      println(this.toString());
     }
 
     if (attack.positionVector.y > positionVector.y) nextY += velocityY;
@@ -542,6 +544,8 @@ class Enemy extends Entity {
 
       this.hittable = false;
       this.lastHit = millis();
+      
+      println(this.toString());
     }
   }
 
@@ -600,5 +604,12 @@ class Enemy extends Entity {
       fill(200, 110, 197, 100);
     }
     rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
+  }
+  
+  
+  
+  @Override
+  String toString() {
+      return "Vida: " + this.maxHp;
   }
 }
