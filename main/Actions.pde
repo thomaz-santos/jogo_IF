@@ -1,12 +1,12 @@
 class Attack {
-  int velocityX, velocityY;
+  float velocityX, velocityY;
   PVector positionVector;
   int hitboxWidth, hitboxHeight;
   Timer t;
   boolean active = false;
   int damage;
 
-  public Attack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
+  public Attack(PVector positionVector, float velocityX, float velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
     this.positionVector = positionVector.copy();
     this.velocityX = velocityX;
     this.velocityY = velocityY;
@@ -47,25 +47,36 @@ class Attack {
 
 class BulletAttack extends Attack {
   PVector mousePosition;
-  
-  
-  public BulletAttack(PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
+
+
+  public BulletAttack(PVector positionVector, float velocityX, float velocityY, int hitboxWidth, int hitboxHeight, int duration, int dmg) {
     super(positionVector, velocityX, velocityY, hitboxWidth, hitboxHeight, duration, dmg);
-    
-     
-    this.mousePosition = new PVector(mouseX - cameraX, mouseY - cameraY);
+
+
+    //this.mousePosition = new PVector(mouseX + cameraX, mouseY + cameraY);
+    // alvo em mundo:
+    this.mousePosition = new PVector(mouseX + cameraX, mouseY + cameraY); // ou - se seu translate for +
+
+    // calcula ângulo e fixa velocidades:
+    float ang = atan2(this.mousePosition.y - this.positionVector.y,
+      this.mousePosition.x - this.positionVector.x);
+
+    // usa velocityX como "speed" já passado no construtor (10 no seu add)
+    float speed = this.velocityX;
+    this.velocityX = cos(ang) * speed;
+    this.velocityY = sin(ang) * speed;
   }
-  
-  @Override 
-  boolean update(PVector targetVector, int targetWidth) {
-    
+
+  @Override
+    boolean update(PVector targetVector, int targetWidth) {
+
     if (t.disparou()) {
       this.active = false;
-      return this.active;
+      return false;
     }
-    
-    PVector des = this.mousePosition.copy().sub(this.positionVector).setMag(velocityX);
-    this.positionVector.add(des);
+
+    this.positionVector.x += this.velocityX;
+    this.positionVector.y += this.velocityY;
 
     this.desenhar();
     return this.active;
@@ -76,18 +87,18 @@ class Dash {
   int velocityX, velocityY;
   Timer t;
   boolean active = true;
-  
+
   public Dash(int vx, int vy, int duration) {
     this.velocityX = vx;
     this.velocityY = vy;
     this.t = new Timer(duration);
   }
-  
+
   boolean isActive() {
-    if(t.disparou()) {
+    if (t.disparou()) {
       this.active = false;
     }
-    
+
     return this.active;
   }
 }
