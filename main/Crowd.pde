@@ -17,10 +17,12 @@ class Crowd {
     
     int[] value = {1, -1};
     for (int i = 0; i < quantity; i++) {
+      float randomLifeValue = random(8, 20);
+      
       int signalX = value[int(random(-1, 2))];
       int signalY = value[int(random(-1, 2))];
       PVector pv = new PVector(player.positionVector.x + (signalX * random(500, width + 100)), player.positionVector.y + (signalY * random(500, width + 100)));
-      this.enemiesList.add(new Enemy(pv, 0, 0, 32, 32, 100 + player.level*10)); //PVector pv, int vx, int vy, int hbw, int hbh, float hp
+      this.enemiesList.add(new Enemy(pv, 0, 0, 32, 32, 100 + player.level*randomLifeValue)); //PVector pv, int vx, int vy, int hbw, int hbh, float hp
     }
   }
 
