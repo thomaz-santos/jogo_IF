@@ -10,17 +10,21 @@ class MenuManager {
   void createInitialMenu() {
     this.menuButtonsList.clear();
     int[] colorCode = {4, 89, 42};
-    PVector pv1 = new PVector(width/2 - (width*0.3)/2, height * 0.6);
-    PVector pv2 = new PVector(width/2 - (width*0.3)/2, height * 0.7);
-    PVector pv3 = new PVector(width/2 - (width*0.3)/2, height * 0.8);
+    PVector pv1 = new PVector(width/2 - (width*0.3)/2, height * 0.4 + height*0.01);
+    PVector pv2 = new PVector(width/2 - (width*0.3)/2, height * 0.5 + height*0.01*2);
+    PVector pv3 = new PVector(width/2 - (width*0.3)/2, height * 0.6 + height*0.01*3);
+    PVector pv4 = new PVector(width/2 - (width*0.3)/2, height * 0.7 + height*0.01*4);
 
-    Button b1 = new Button(pv1, width*0.3, 75, "Jogar", colorCode, 1);
-    Button b2 = new Button(pv2, width*0.3, 75, "Opções", colorCode, 2);
-    Button b3 = new Button(pv3, width*0.3, 75, "Créditos", colorCode, 3);
+    Button b1 = new Button(pv1, width*0.3, height*0.1, "Jogar", colorCode, 1);
+    Button b2 = new Button(pv2, width*0.3, height*0.1, "Opções", colorCode, 2);
+    Button b3 = new Button(pv3, width*0.3, height*0.1, "Créditos", colorCode, 3);
+    Button b4 = new Button(pv4, width*0.3, height*0.1, "Tutorial", colorCode, 5);
+    //PVector pv, float hitboxWidth, float hitboxHeight, String text, int[] colorCode, int v
 
     this.menuButtonsList.add(b1);
     this.menuButtonsList.add(b2);
     this.menuButtonsList.add(b3);
+    this.menuButtonsList.add(b4);
   }
 
   void createOptionsMenu() {
