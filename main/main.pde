@@ -22,6 +22,10 @@ Camada colisao;
 Camada frente;
 PImage tiles;
 
+Camada fundoTutorial;
+Camada colisaoTutorial;
+Camada frenteTutorial;
+PImage tilesTutorial;
 
 void setup() {
   size(900, 700);
@@ -35,6 +39,11 @@ void setup() {
   fundo = new Camada(80, 80, "camadaFundo", 32, 32, tiles, 55);
   colisao = new Camada(80, 80, "camadaMeio", 32, 32, tiles, 55);
   frente = new Camada(80, 80, "camadaFrente", 32, 32, tiles, 55);
+
+  //tilesTutorial = loadImage("tileset_tutorial.png");
+  //fundoTutorial = new Camada(int l, int a, String nomeArquivo, int tLar, int tAlt, PImage tImage, int nTiles);
+  //colisaoTutorial = new Camada(int l, int a, String nomeArquivo, int tLar, int tAlt, PImage tImage, int nTiles);
+  //frenteTutorial = new Camada(int l, int a, String nomeArquivo, int tLar, int tAlt, PImage tImage, int nTiles);
 
   pv = new PVector(width/2, height/2);
   p = new Player(pv, 3, 3, 32, 32, 5, 1.5, 0.3, 30);
@@ -129,6 +138,13 @@ void draw() {
     textAlign(CENTER);
     text(text, width/2, height/2);
     break;
+
+  case 5:
+    //Area de tutorial
+    //fundoTutorial.exibir(1);
+    //colisaoTutorial.exibir(1);
+    
+    //frenteTutorial.exibir(1);
   }
 }
 
