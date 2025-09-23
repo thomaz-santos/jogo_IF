@@ -24,10 +24,11 @@ class GameTimer {
   int currentTime;
   boolean active = true;
   boolean paused = false;
+  
+  int pauseStartTime = 0;  // Armazena o tempo em que a pausa começou
 
   public GameTimer(int d) {
-    this.duration = d*1000;
-
+    this.duration = d * 1000;
     this.currentTime = millis();
     this.endTime = currentTime + duration;
   }
@@ -42,16 +43,23 @@ class GameTimer {
 
       this.draw();
     } else {
-      this.draw();
+      this.draw(); // Ainda desenha, mas o tempo fica parado
     }
   }
 
   void pause() {
-    this.paused = true;
+    if (!this.paused) {
+      this.paused = true;
+      this.pauseStartTime = millis();  // Marca o tempo em que foi pausado
+    }
   }
 
   void resume() {
-    this.paused = false;
+    if (this.paused) {
+      int pauseDuration = millis() - this.pauseStartTime;  // Quanto tempo ficou pausado
+      this.endTime += pauseDuration;  // Adiciona esse tempo ao fim
+      this.paused = false;
+    }
   }
 
   boolean isActive() {
@@ -60,7 +68,7 @@ class GameTimer {
 
   void draw() {
     fill(240, 255, 246);
-    text(this.currentTime/1000, width/2, height*0.08);
+    text((endTime - millis()) / 1000, width / 2, height * 0.08);
   }
 }
 
