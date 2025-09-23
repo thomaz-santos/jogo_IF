@@ -1,10 +1,12 @@
 class Crowd {
   ArrayList<Enemy> enemiesList = new ArrayList<Enemy>();
-  int quantity, lastQuantity;
+  int quantity, lastQuantity, firstQuantity;
 
   Crowd(Entity player) {
     this.quantity = player.level*5;
     this.lastQuantity = this.quantity;
+    this.firstQuantity = quantity;
+    
     this.create(player);
   }
 
@@ -47,5 +49,11 @@ class Crowd {
         player.experience += 10;
       }
     }
+  }
+  
+  void reset() {
+    enemiesList.clear();
+    this.quantity = this.firstQuantity;
+    this.lastQuantity = this.firstQuantity;
   }
 }
