@@ -176,7 +176,7 @@ class Player extends Entity {
   int attackDamage;
 
   PImage lifePoint;
-
+  
   public Player(PVector pv, float vx, float vy, int hbw, int hbh, float maxV, float accele, float fric, int atkDmg) {
     super(pv, vx, vy, hbw, hbh);
     this.baseVelocity = vx; // corrigido para manter apenas vx (o vy original sobrescrevia)
@@ -185,8 +185,8 @@ class Player extends Entity {
     this.friction = fric;
     this.attackDamage = atkDmg;
 
-    lifePoint = loadImage("HUD/life-point.png");
-  }
+    this.lifePoint = loadImage("HUD/life-point.png");
+}
 
   @Override
 void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, ArrayList<Enemy> enemiesCrowd) {
@@ -246,7 +246,7 @@ void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft,
     for (Enemy target : enemiesCrowd) {
       if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
         hp -= 1;
-        println("hit");
+        hit.trigger();
         hittable = false;
         lastHit = millis();
       }
@@ -316,7 +316,7 @@ void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft,
   for (Enemy target : enemiesCrowd) {
     if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
       hp -= 1;
-      println("hit");
+      //hit.trigger();
       hittable = false;
       lastHit = millis();
     }
@@ -343,7 +343,7 @@ void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft,
   for (Enemy target : enemiesCrowd) {
     if (checkCollisionY(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
       hp -= 1;
-      println("hit");
+      //hit.trigger();
       hittable = false;
       lastHit = millis();
     }
