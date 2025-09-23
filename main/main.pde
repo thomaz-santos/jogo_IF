@@ -1,3 +1,5 @@
+import ddf.minim.*;
+
 int gameState = 0;
 MenuManager menuManager;
 
@@ -27,6 +29,9 @@ Camada colisaoTutorial;
 Camada frenteTutorial;
 PImage tilesTutorial;
 
+Minim minim;
+AudioSample hit;
+
 void setup() {
   size(900, 700);
   //fullScreen();
@@ -50,6 +55,8 @@ void setup() {
   //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
 
   crowd = new Crowd(p);
+  
+  //hit = minim.loadSample("hitSound.wav");
 }
 
 void draw() {
@@ -63,10 +70,10 @@ void draw() {
 
   case 1:
     if (initialTime) {
-      gameTimer = new GameTimer(60);
+      gameTimer = new GameTimer(30);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
-      //p.reset();
-      //crowd.reset();
+      p.reset();
+      crowd.reset();
 
       initialTime = false;
     }
@@ -103,7 +110,10 @@ void draw() {
 
       ajustarCamera(p, 100);
     } else {
-      text("Pausado", width/2, height/2);
+      //text("Pausado", width/2, height/2);
+      initialTime = true;
+      gameTimer.paused = false;
+      gameState = 0;
     }
 
     if (!p.isAlive() || !gameTimer.isActive()) {
