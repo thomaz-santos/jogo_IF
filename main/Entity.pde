@@ -176,7 +176,11 @@ class Player extends Entity {
   int attackDamage;
 
   PImage lifePoint;
-  
+  PImage[][] sprites;
+  Timer tAni; //timer animação
+  int quadro, direcao;
+  int mEsq, mCima;
+
   public Player(PVector pv, float vx, float vy, int hbw, int hbh, float maxV, float accele, float fric, int atkDmg) {
     super(pv, vx, vy, hbw, hbh);
     this.baseVelocity = vx; // corrigido para manter apenas vx (o vy original sobrescrevia)
@@ -186,174 +190,191 @@ class Player extends Entity {
     this.attackDamage = atkDmg;
 
     this.lifePoint = loadImage("HUD/life-point.png");
-}
+
+    PImage aux;
+    aux = loadImage("characters/player/player3.png");
+    aux.resize(64*4*2, 64*4*2);
+    //aux.resize(larSpr*4*escala,altSpr*4*escala);
+    sprites = new PImage[4][4];
+    for (int i=0; i<4; i++)
+    {
+      for (int j=0; j<4; j++)
+      {
+        sprites[i][j] = aux.get(j*128, i*128, 128, 128);
+        //j*larSpr,i*altSpr,larSpr,altSpr
+      }
+    }
+    tAni = new Timer(1000/4);
+    this.mEsq =32;
+    this.mCima = 32;
+  }
 
   @Override
-void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, ArrayList<Enemy> enemiesCrowd) {
-  this.dashCooldown = floor(frameRate * 1.5);
+    void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft, ArrayList<Enemy> enemiesCrowd) {
+    this.dashCooldown = floor(frameRate * 1.5);
 
-  // 1) Cooldown do dash
-  if (!dashAvailable && !dashing && dashCooldownTimer > 0) {
-    dashCooldownTimer--;
-  }
-  if (!dashAvailable && !dashing && dashCooldownTimer == 0) {
-    dashAvailable = true;
-  }
+    // 1) Cooldown do dash
+    if (!dashAvailable && !dashing && dashCooldownTimer > 0) {
+      dashCooldownTimer--;
+    }
+    if (!dashAvailable && !dashing && dashCooldownTimer == 0) {
+      dashAvailable = true;
+    }
 
-  // =========================
-  // 2) SE ESTIVER DASHANDO
-  // =========================
-  if (dashing) {
-    float nextX = positionVector.x + dashVx;
-    float nextY = positionVector.y + dashVy;
+    // =========================
+    // 2) SE ESTIVER DASHANDO
+    // =========================
+    if (dashing) {
+      float nextX = positionVector.x + dashVx;
+      float nextY = positionVector.y + dashVy;
+
+      if (millis() > lastHit + hittableCooldown && !dashing) hittable = true;
+
+      // ---- Colisão com cenário durante o dash ----
+      // Primeiro checa eixo X
+      boolean colisaoX = this.colidiuCenarioEmX(colisao, nextX, positionVector.y);
+      if (!colisaoX) {
+        positionVector.x = nextX;
+      } else {
+        // Ajusta posição para encostar na parede
+        if (dashVx > 0) { // indo para direita
+          int tileCol = int((nextX + hitboxWidth) / colisao.tLar);
+          positionVector.x = tileCol * colisao.tLar - hitboxWidth;
+        } else if (dashVx < 0) { // indo para esquerda
+          int tileCol = int(nextX / colisao.tLar);
+          positionVector.x = (tileCol + 1) * colisao.tLar;
+        }
+        dashVx = 0; // cancela movimento horizontal do dash
+      }
+
+      // Depois checa eixo Y
+      boolean colisaoY = this.colidiuCenarioEmY(colisao, positionVector.x, nextY);
+      if (!colisaoY) {
+        positionVector.y = nextY;
+      } else {
+        // Ajusta posição para encostar no tile
+        if (dashVy > 0) { // descendo
+          int tileRow = int((nextY + hitboxHeight) / colisao.tAlt);
+          positionVector.y = tileRow * colisao.tAlt - hitboxHeight;
+        } else if (dashVy < 0) { // subindo
+          int tileRow = int(nextY / colisao.tAlt);
+          positionVector.y = (tileRow + 1) * colisao.tAlt;
+        }
+        dashVy = 0; // cancela movimento vertical do dash
+      }
+
+      // ---- Colisão com inimigos durante dash ----
+      for (Enemy target : enemiesCrowd) {
+        if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
+          hp -= 1;
+          //hit.trigger();
+          hittable = false;
+          lastHit = millis();
+        }
+      }
+
+      // decrementa timer do dash
+      dashTimer--;
+      if (dashTimer <= 0 || (dashVx == 0 && dashVy == 0)) {
+        dashing = false;
+        velocityX = 0;
+        velocityY = 0;
+        dashCooldownTimer = dashCooldown;
+        dashAvailable = false;
+      }
+
+      desenhar();
+      return; // pula MUV normal enquanto estiver em dash
+    }
+
+    // =========================
+    // 3) MOVIMENTO NORMAL (MUV)
+    // =========================
+
+    // --- Atualiza velocidade em X
+    if (moveLeft) {
+      velocityX = max(velocityX - acceleration, -maxVelocity);
+    } else if (moveRight) {
+      velocityX = min(velocityX + acceleration, maxVelocity);
+    } else {
+      if (velocityX > 0) velocityX = max(0, velocityX - friction);
+      else if (velocityX < 0) velocityX = min(0, velocityX + friction);
+    }
+
+    // --- Atualiza velocidade em Y
+    if (moveUp) {
+      velocityY = max(velocityY - acceleration, -maxVelocity);
+    } else if (moveDown) {
+      velocityY = min(velocityY + acceleration, maxVelocity);
+    } else {
+      if (velocityY > 0) velocityY = max(0, velocityY - friction);
+      else if (velocityY < 0) velocityY = min(0, velocityY + friction);
+    }
+
+    float nextX = positionVector.x + velocityX;
+    float nextY = positionVector.y + velocityY;
 
     if (millis() > lastHit + hittableCooldown && !dashing) hittable = true;
 
-    // ---- Colisão com cenário durante o dash ----
-    // Primeiro checa eixo X
+    // =========================
+    // 4) MOVIMENTO E COLISÃO EM X
+    // =========================
     boolean colisaoX = this.colidiuCenarioEmX(colisao, nextX, positionVector.y);
     if (!colisaoX) {
       positionVector.x = nextX;
     } else {
-      // Ajusta posição para encostar na parede
-      if (dashVx > 0) { // indo para direita
+      if (velocityX > 0) { // movendo para direita
         int tileCol = int((nextX + hitboxWidth) / colisao.tLar);
         positionVector.x = tileCol * colisao.tLar - hitboxWidth;
-      } else if (dashVx < 0) { // indo para esquerda
+      } else if (velocityX < 0) { // movendo para esquerda
         int tileCol = int(nextX / colisao.tLar);
         positionVector.x = (tileCol + 1) * colisao.tLar;
       }
-      dashVx = 0; // cancela movimento horizontal do dash
+      velocityX = 0;
     }
 
-    // Depois checa eixo Y
-    boolean colisaoY = this.colidiuCenarioEmY(colisao, positionVector.x, nextY);
-    if (!colisaoY) {
-      positionVector.y = nextY;
-    } else {
-      // Ajusta posição para encostar no tile
-      if (dashVy > 0) { // descendo
-        int tileRow = int((nextY + hitboxHeight) / colisao.tAlt);
-        positionVector.y = tileRow * colisao.tAlt - hitboxHeight;
-      } else if (dashVy < 0) { // subindo
-        int tileRow = int(nextY / colisao.tAlt);
-        positionVector.y = (tileRow + 1) * colisao.tAlt;
-      }
-      dashVy = 0; // cancela movimento vertical do dash
-    }
-
-    // ---- Colisão com inimigos durante dash ----
+    // Colisão X com inimigos
     for (Enemy target : enemiesCrowd) {
       if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
         hp -= 1;
-        hit.trigger();
+        //hit.trigger();
         hittable = false;
         lastHit = millis();
       }
     }
 
-    // decrementa timer do dash
-    dashTimer--;
-    if (dashTimer <= 0 || (dashVx == 0 && dashVy == 0)) {
-      dashing = false;
-      velocityX = 0;
+    // =========================
+    // 5) MOVIMENTO E COLISÃO EM Y
+    // =========================
+    boolean colisaoY = this.colidiuCenarioEmY(colisao, positionVector.x, nextY);
+    if (!colisaoY) {
+      positionVector.y = nextY;
+    } else {
+      if (velocityY > 0) { // descendo
+        int tileRow = int((nextY + hitboxHeight) / colisao.tAlt);
+        positionVector.y = tileRow * colisao.tAlt - hitboxHeight;
+      } else if (velocityY < 0) { // subindo
+        int tileRow = int(nextY / colisao.tAlt);
+        positionVector.y = (tileRow + 1) * colisao.tAlt;
+      }
       velocityY = 0;
-      dashCooldownTimer = dashCooldown;
-      dashAvailable = false;
     }
 
+    // Colisão Y com inimigos
+    for (Enemy target : enemiesCrowd) {
+      if (checkCollisionY(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
+        hp -= 1;
+        //hit.trigger();
+        hittable = false;
+        lastHit = millis();
+      }
+    }
+
+    // =========================
+    // 6) DESENHAR PERSONAGEM
+    // =========================
     desenhar();
-    return; // pula MUV normal enquanto estiver em dash
   }
-
-  // =========================
-  // 3) MOVIMENTO NORMAL (MUV)
-  // =========================
-
-  // --- Atualiza velocidade em X
-  if (moveLeft) {
-    velocityX = max(velocityX - acceleration, -maxVelocity);
-  } else if (moveRight) {
-    velocityX = min(velocityX + acceleration, maxVelocity);
-  } else {
-    if (velocityX > 0) velocityX = max(0, velocityX - friction);
-    else if (velocityX < 0) velocityX = min(0, velocityX + friction);
-  }
-
-  // --- Atualiza velocidade em Y
-  if (moveUp) {
-    velocityY = max(velocityY - acceleration, -maxVelocity);
-  } else if (moveDown) {
-    velocityY = min(velocityY + acceleration, maxVelocity);
-  } else {
-    if (velocityY > 0) velocityY = max(0, velocityY - friction);
-    else if (velocityY < 0) velocityY = min(0, velocityY + friction);
-  }
-
-  float nextX = positionVector.x + velocityX;
-  float nextY = positionVector.y + velocityY;
-
-  if (millis() > lastHit + hittableCooldown && !dashing) hittable = true;
-
-  // =========================
-  // 4) MOVIMENTO E COLISÃO EM X
-  // =========================
-  boolean colisaoX = this.colidiuCenarioEmX(colisao, nextX, positionVector.y);
-  if (!colisaoX) {
-    positionVector.x = nextX;
-  } else {
-    if (velocityX > 0) { // movendo para direita
-      int tileCol = int((nextX + hitboxWidth) / colisao.tLar);
-      positionVector.x = tileCol * colisao.tLar - hitboxWidth;
-    } else if (velocityX < 0) { // movendo para esquerda
-      int tileCol = int(nextX / colisao.tLar);
-      positionVector.x = (tileCol + 1) * colisao.tLar;
-    }
-    velocityX = 0;
-  }
-
-  // Colisão X com inimigos
-  for (Enemy target : enemiesCrowd) {
-    if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
-      hp -= 1;
-      //hit.trigger();
-      hittable = false;
-      lastHit = millis();
-    }
-  }
-
-  // =========================
-  // 5) MOVIMENTO E COLISÃO EM Y
-  // =========================
-  boolean colisaoY = this.colidiuCenarioEmY(colisao, positionVector.x, nextY);
-  if (!colisaoY) {
-    positionVector.y = nextY;
-  } else {
-    if (velocityY > 0) { // descendo
-      int tileRow = int((nextY + hitboxHeight) / colisao.tAlt);
-      positionVector.y = tileRow * colisao.tAlt - hitboxHeight;
-    } else if (velocityY < 0) { // subindo
-      int tileRow = int(nextY / colisao.tAlt);
-      positionVector.y = (tileRow + 1) * colisao.tAlt;
-    }
-    velocityY = 0;
-  }
-
-  // Colisão Y com inimigos
-  for (Enemy target : enemiesCrowd) {
-    if (checkCollisionY(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
-      hp -= 1;
-      //hit.trigger();
-      hittable = false;
-      lastHit = millis();
-    }
-  }
-
-  // =========================
-  // 6) DESENHAR PERSONAGEM
-  // =========================
-  desenhar();
-}
 
 
   boolean colidiuCenarioEmX(Camada colisao, float testX, float currentY) {
@@ -400,6 +421,7 @@ void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft,
 
       attacksList.add(new Attack(pv, 0, 0, 30, hitboxHeight+10, 700, this.attackDamage));
       //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int damage
+      playerAttackSound.trigger();
     }
   }
 
@@ -487,9 +509,28 @@ void move(boolean moveUp, boolean moveDown, boolean moveRight, boolean moveLeft,
     text("Pontos: " + experience, 10, height * 0.04);
 
     // Hitbox do jogador
-    if (hittable) fill(7, 138, 65, 255);
-    else fill(7, 138, 65, 120);
+    //if (hittable) fill(7, 138, 65, 255);
+    //else fill(7, 138, 65, 120);
+    //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
+    //fill(255, 0, 0, 255);
+    noFill();
+    stroke(0, 255, 0);
     rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
+
+    if (tAni.disparou())
+    {
+      quadro=(quadro+1)%4;
+    }
+
+    if (moveDown)direcao=0;
+    else if (moveRight)direcao=2;
+    else if (moveUp)direcao=1;
+    else if (moveLeft)direcao=3;
+    else quadro=0;
+
+    image(sprites[direcao][quadro], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
+    stroke(0);
+    noFill();
 
     //Indicador de dash
     if (dashAvailable) {

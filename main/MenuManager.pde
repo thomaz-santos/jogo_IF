@@ -2,62 +2,66 @@ class MenuManager {
   ArrayList<Button> menuButtonsList = new ArrayList<Button>();
   int gameState;
   GameTimer gameTimer;
+  
+  PImage menuTitle;
 
   public MenuManager(int gm) {
     this.gameState = gm;
   }
 
   void createInitialMenu() {
+    PImage buttonImageReference;
+    buttonImageReference = loadImage("HUD/menuButtons/playButton.png");
+    buttonImageReference.resize(buttonImageReference.width/2,buttonImageReference.height/2);
+    
     this.menuButtonsList.clear();
-    int[] colorCode = {4, 89, 42};
-    PVector pv1 = new PVector(width/2 - (width*0.3)/2, height * 0.4 + height*0.01);
-    PVector pv2 = new PVector(width/2 - (width*0.3)/2, height * 0.5 + height*0.01*2);
-    PVector pv3 = new PVector(width/2 - (width*0.3)/2, height * 0.6 + height*0.01*3);
-    PVector pv4 = new PVector(width/2 - (width*0.3)/2, height * 0.7 + height*0.01*4);
+    PVector pv1 = new PVector(width/2 - (buttonImageReference.width/2), height * 0.45 + height*0.02);
+    PVector pv2 = new PVector(width/2 - (buttonImageReference.width/2), height * 0.55 + height*0.02*2);
+    PVector pv3 = new PVector(width/2 - (buttonImageReference.width/2), height * 0.65 + height*0.02*3);
+    PVector pv4 = new PVector(width/2 - (buttonImageReference.width/2), height * 0.75 + height*0.02*4);
+//width/2 - (width*0.3)/2, height * 0.4 + height*0.01
 
-    Button b1 = new Button(pv1, width*0.3, height*0.1, "Jogar", colorCode, 1);
-    Button b2 = new Button(pv2, width*0.3, height*0.1, "Opções", colorCode, 2);
-    Button b3 = new Button(pv3, width*0.3, height*0.1, "Créditos", colorCode, 3);
-    Button b4 = new Button(pv4, width*0.3, height*0.1, "Tutorial", colorCode, 5);
-    //PVector pv, float hitboxWidth, float hitboxHeight, String text, int[] colorCode, int v
+    Button b1 = new Button(pv1, buttonImageReference.width, buttonImageReference.height, "Jogar", "HUD/menuButtons/playButton.png", 1);
+    Button b2 = new Button(pv2, buttonImageReference.width, buttonImageReference.height, "Opções", "HUD/menuButtons/optionsButton.png", 2);
+    Button b3 = new Button(pv3, buttonImageReference.width, buttonImageReference.height, "Créditos", "HUD/menuButtons/creditsButton.png", 3);
+    Button b4 = new Button(pv4, buttonImageReference.width, buttonImageReference.height, "Tutorial", "HUD/menuButtons/tutorialButton.png", 5);
 
     this.menuButtonsList.add(b1);
     this.menuButtonsList.add(b2);
     this.menuButtonsList.add(b3);
     this.menuButtonsList.add(b4);
+    
+    this.menuTitle = loadImage("HUD/menuTitle3.png");
   }
 
   void createOptionsMenu() {
     this.menuButtonsList.clear();
-    int[] colorCode = {4, 89, 42};
 
     PVector pv1 = new PVector(width*0.02, height*0.04);
 
-    Button b1 = new Button(pv1, width*0.15, 50, "Voltar", colorCode, 0);
+    Button b1 = new Button(pv1, 320, 128, "Voltar", "HUD/menuButtons/exitButton.png", 0);
 
     this.menuButtonsList.add(b1);
   }
 
   void createCreditsMenu() {
     this.menuButtonsList.clear();
-    int[] colorCode = {4, 89, 42};
 
     PVector pv1 = new PVector(width*0.02, height*0.04);
 
-    Button b1 = new Button(pv1, width*0.15, 50, "Voltar", colorCode, 0);
+    Button b1 = new Button(pv1, 320, 128, "Voltar", "HUD/menuButtons/exitButton.png", 0);
 
     this.menuButtonsList.add(b1);
   }
 
   void createPauseMenu() {
     this.menuButtonsList.clear();
-    int[] colorCode = {4, 89, 42};
 
     PVector pv1 = new PVector(width/2, height*0.4);
     PVector pv2 = new PVector(width/2, height*0.5);
 
-    Button b1 = new Button(pv1, width*0.15, 50, "Jogar", colorCode, 1);
-    Button b2 = new Button(pv2, width*0.15, 50, "Voltar ao menu", colorCode, 0);
+    Button b1 = new Button(pv1, 320, 128, "Jogar", "HUD/menuButtons/playButton.png", 1);
+    Button b2 = new Button(pv2, 320, 128, "Voltar ao menu", "HUD/menuButtons/exitButton.png", 0);
 
     this.menuButtonsList.add(b1);
     this.menuButtonsList.add(b2);
@@ -84,10 +88,7 @@ class MenuManager {
 
     switch(this.gameState) {
     case 0:
-      textAlign(CENTER);
-      textSize(150);
-      fill(4, 89, 42);
-      text("Wave Game", width/2, height*0.3);
+      image(this.menuTitle, width/2 - (menuTitle.width/2), height*0.05);
 
       for (Button b : this.menuButtonsList) {
         b.draw();
@@ -141,26 +142,26 @@ class Button {
   PVector positionVector;
   float hitboxWidth, hitboxHeight;
   String text;
-  int[] colorCode = new int[3];
+  String imagePath;
   int value;
+  PImage sprite;
 
-  public Button(PVector pv, float hitboxWidth, float hitboxHeight, String text, int[] colorCode, int v) {
+  public Button(PVector pv, float hitboxWidth, float hitboxHeight, String text, String path, int v) {
     this.positionVector = pv;
     this.hitboxWidth = hitboxWidth;
     this.hitboxHeight = hitboxHeight;
     this.text = text;
-    this.colorCode = colorCode.clone();
+    this.imagePath = path;
     this.value = v;
+    
+    this.sprite = loadImage(this.imagePath);
+    this.sprite.resize(sprite.width/2,sprite.height/2);
+    this.hitboxWidth = sprite.width;
+    this.hitboxHeight = sprite.height;
   }
 
   void draw() {
-    fill(this.colorCode[0], this.colorCode[1], this.colorCode[2]);
-    rect(this.positionVector.x, this.positionVector.y, this.hitboxWidth, this.hitboxHeight);
-
-    textAlign(CENTER);
-    textSize(40);
-    fill(255);
-    text(this.text, this.positionVector.x + (this.hitboxWidth/2), this.positionVector.y + (this.hitboxHeight*0.7));
+    image(this.sprite, this.positionVector.x, this.positionVector.y);
   }
 
   boolean collision() {

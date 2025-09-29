@@ -25,12 +25,21 @@ class GameTimer {
   boolean active = true;
   boolean paused = false;
   
+  PImage sprite;
+  
   int pauseStartTime = 0;  // Armazena o tempo em que a pausa começou
 
+
+  float step;
+  int currentSprite;
   public GameTimer(int d) {
     this.duration = d * 1000;
     this.currentTime = millis();
     this.endTime = currentTime + duration;
+    
+    
+    this.step = duration/8;
+    //this.sprite = loadImage("HUD/timer/timer1.png");
   }
 
   void update() {
@@ -69,6 +78,13 @@ class GameTimer {
   void draw() {
     fill(240, 255, 246);
     text((endTime - millis()) / 1000, width / 2, height * 0.08);
+    
+    this.currentSprite = ceil(currentTime/step);
+    if(currentSprite >= 9) {currentSprite = 1;}
+    
+    this.sprite = loadImage("HUD/timer/timer" + this.currentSprite + ".png");
+    
+    image(this.sprite, width / 2 - (this.sprite.width/2), height * 0.08);
   }
 }
 

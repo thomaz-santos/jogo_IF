@@ -30,7 +30,9 @@ Camada frenteTutorial;
 PImage tilesTutorial;
 
 Minim minim;
-AudioSample hit;
+AudioSample playerAttackSound;
+
+PImage cursorDefault;
 
 void setup() {
   size(900, 700);
@@ -51,12 +53,17 @@ void setup() {
   //frenteTutorial = new Camada(int l, int a, String nomeArquivo, int tLar, int tAlt, PImage tImage, int nTiles);
 
   pv = new PVector(width/2, height/2);
-  p = new Player(pv, 3, 3, 32, 32, 5, 1.5, 0.3, 30);
+  p = new Player(pv, 3, 3, 64, 64, 5, 1.5, 0.3, 30);
   //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
 
   crowd = new Crowd(p);
   
-  //hit = minim.loadSample("hitSound.wav");
+  minim = new Minim(this);  
+  playerAttackSound = minim.loadSample("audio/sfx/playerHit.mp3");
+  
+  
+  cursorDefault = loadImage("HUD/cursorDefault.png");
+  cursor(cursorDefault, 0, 0);
 }
 
 void draw() {
