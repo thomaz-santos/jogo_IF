@@ -131,7 +131,7 @@ void draw() {
 
   switch(gameState) {
   case 0:
-    background(200);
+    background(205, 223, 108);
     menuManager.createInitialMenu();
     gameState = menuManager.update(gameState);
 
@@ -197,13 +197,13 @@ void draw() {
     break;
 
   case 2:
-    background(200);
+    background(205, 223, 108);
     menuManager.createOptionsMenu();
     gameState = menuManager.update(gameState);
     break;
 
   case 3:
-    background(200);
+    background(205, 223, 108);
     menuManager.createCreditsMenu();
     gameState = menuManager.update(gameState);
     break;
@@ -227,7 +227,7 @@ void draw() {
 
     //frenteTutorial.exibir(1);
 
-    background(200);
+    background(205, 223, 108);
     image(tutorialHUD, 100, 50);
 
     if (moveUp) {
@@ -308,7 +308,7 @@ void draw() {
     break;
 
   case 6:
-    background(0, 0, 0, 180);
+    background(205, 223, 108, 200);
     menuManager.createPauseMenu();
     gameState = menuManager.update(gameState);
     break;
