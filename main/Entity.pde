@@ -181,6 +181,11 @@ class Player extends Entity {
   int quadro, direcao;
   int mEsq, mCima;
 
+  boolean attacking; // se está no meio de uma animação de ataque
+  int atkFrame;          // quadro atual da animação de ataque
+  int atkFrames;         // número de quadros da animação (ajuste conforme sprite)
+  Timer atkAni;              // timer só para ataque
+
   public Player(PVector pv, float vx, float vy, int hbw, int hbh, float maxV, float accele, float fric, int atkDmg) {
     super(pv, vx, vy, hbw, hbh);
     this.baseVelocity = vx; // corrigido para manter apenas vx (o vy original sobrescrevia)
@@ -192,11 +197,11 @@ class Player extends Entity {
     this.lifePoint = loadImage("HUD/life-point.png");
 
     PImage aux;
-    aux = loadImage("characters/player/player3.png");
-    aux.resize(64*4*2, 64*4*2);
+    aux = loadImage("characters/player/player4.png");
+    aux.resize(64*4*2, 64*4*3);
     //aux.resize(larSpr*4*escala,altSpr*4*escala);
-    sprites = new PImage[4][4];
-    for (int i=0; i<4; i++)
+    sprites = new PImage[6][4];
+    for (int i=0; i<6; i++)
     {
       for (int j=0; j<4; j++)
       {
@@ -207,6 +212,11 @@ class Player extends Entity {
     tAni = new Timer(1000/4);
     this.mEsq =32;
     this.mCima = 32;
+
+    this.atkAni = new Timer(800/4);
+    this.attacking = false;
+    this.atkFrame = 0;          // quadro atual da animação de ataque
+    this.atkFrames = 3;
   }
 
   @Override
@@ -419,9 +429,14 @@ class Player extends Entity {
         pv = new PVector(positionVector.x, positionVector.y);
       }
 
-      attacksList.add(new Attack(pv, 0, 0, 30, hitboxHeight+10, 700, this.attackDamage));
+      attacksList.add(new Attack(pv, 0, 0, 30, hitboxHeight+10, 800, this.attackDamage));
       //PVector positionVector, int velocityX, int velocityY, int hitboxWidth, int hitboxHeight, int duration, int damage
       playerAttackSound.trigger();
+
+      // ativa animação de ataque
+      attacking = true;
+      atkFrame = 0;
+      atkAni.reset();
     }
   }
 
@@ -443,8 +458,9 @@ class Player extends Entity {
     for (int i = 0; i < attacksList.size(); i++) {
       Attack attack = attacksList.get(i);
       if (!attack.update(positionVector, hitboxWidth)) {
-        if (attack.getClass() == Attack.class) attackAvailable = true;
-        else bulletAttackAvailable = true;
+        if (attack.getClass() == Attack.class) {
+          attackAvailable = true;
+        } else bulletAttackAvailable = true;
         attacksList.remove(i);
       }
     }
@@ -491,7 +507,7 @@ class Player extends Entity {
     if (this.experience >= this.level*20) {
       this.level++;
       this.experience = 0;
-      this.attackDamage *= 1.05;
+      //this.attackDamage *= 1.05;
 
       if (this.hp * 1.1 >= this.maxHp) {
         this.hp = maxHp;
@@ -513,56 +529,85 @@ class Player extends Entity {
     //else fill(7, 138, 65, 120);
     //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
     //fill(255, 0, 0, 255);
-    noFill();
-    stroke(0, 255, 0);
-    rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
+    //noFill();
+    //stroke(0, 255, 0);
+    //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
 
     if (tAni.disparou())
     {
       quadro=(quadro+1)%4;
     }
 
-    if (moveDown)direcao=0;
-    else if (moveRight)direcao=2;
-    else if (moveUp)direcao=1;
-    else if (moveLeft)direcao=3;
-    else quadro=0;
+    if (attacking) {
+      // avança quadro de ataque
+      if (atkAni.disparou()) {
+        atkFrame++;
+        if (atkFrame >= atkFrames) {
+          atkFrame = 0;
+          attacking = false; // animação terminou
+        }
+      }
 
-    image(sprites[direcao][quadro], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
-    stroke(0);
-    noFill();
+      if (mouseX < this.positionVector.x  - cameraX)direcao = 3;
+      else if (mouseX > this.positionVector.x  - cameraX)direcao = 2;
+
+      // escolhe linha do sprite de ataque
+      int linhaAtk;
+      if (direcao == 2) linhaAtk = 4; // direita (5ª linha do sprite, index 4)
+      else if (direcao == 3) linhaAtk = 5; // esquerda (6ª linha do sprite, index 5)
+      else linhaAtk = 4; // fallback: direita por padrão
+
+      image(sprites[linhaAtk][atkFrame], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
+    } else {
+      if (moveDown)direcao=0;
+      else if (moveRight)direcao=2;
+      else if (moveUp)direcao=1;
+      else if (moveLeft)direcao=3;
+      else quadro=0;
+
+      image(sprites[direcao][quadro], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
+      stroke(0);
+      noFill();
+    }
 
     //Indicador de dash
-    if (dashAvailable) {
-      rectMode(CENTER);
-      fill(10, 50, 190);
-      rect((this.positionVector.x + this.hitboxWidth/2)-cameraX, (this.positionVector.y + this.hitboxHeight/2)-cameraY, this.hitboxWidth*0.4, this.hitboxHeight*0.4);
-      rectMode(CORNER);
-    }
+    //if (dashAvailable) {
+    //  rectMode(CENTER);
+    //  fill(10, 50, 190);
+    //  rect((this.positionVector.x + this.hitboxWidth/2)-cameraX, (this.positionVector.y + this.hitboxHeight/2)-cameraY, this.hitboxWidth*0.4, this.hitboxHeight*0.4);
+    //  rectMode(CORNER);
+    //}
 
     for (int i = 0; i<this.hp; i++) {
       image(lifePoint, width*0.03 + i*32, height*0.05);
     }
 
-    //Nivel do jogador
-    fill(58, 207, 117);
-    textAlign(LEFT);
-    text(level, width*0.95, height * 0.04);
+    ////Nivel do jogador
+    //fill(58, 207, 117);
+    //textAlign(LEFT);
+    //text(level, width*0.95, height * 0.04);
 
-    //Barra de nível do Jogador
-    this.manageLevel();
+    ////Barra de nível do Jogador
+    //this.manageLevel();
 
-    float currentXp = map(this.experience, 0, level*20, 0, width*0.4);
-    fill(186, 7, 7);
-    rect(width*0.3, 60, width*0.4, 20);
-    fill(10, 40, 200);
-    rect(width*0.3, 60, currentXp, 20);
+    //float currentXp = map(this.experience, 0, level*20, 0, width*0.4);
+    //fill(186, 7, 7);
+    //rect(width*0.3, 60, width*0.4, 20);
+    //fill(10, 40, 200);
+    //rect(width*0.3, 60, currentXp, 20);
   }
 }
 
 
 class Enemy extends Entity {
   float hp, maxHp, acceleration;
+
+  PImage[][] sprites;
+  Timer tAni; //timer animação
+  int quadro, direcao;
+  int mEsq, mCima;
+  //Timer soundTimer;
+  boolean playedSound;
 
   public Enemy(PVector pv, float vx, float vy, int hbw, int hbh, float hp) {
     super(pv, vx, vy, hbw, hbh);
@@ -573,11 +618,39 @@ class Enemy extends Entity {
     this.hittableCooldown = 1000;
     this.hittable = true;
     this.lastHit = 0;
+
+    PImage aux;
+    aux = loadImage("characters/chicken/galinha.png");
+    aux.resize(32*4*1, 32*4*1);
+    //aux.resize(larSpr*4*escala,altSpr*4*escala);
+    sprites = new PImage[4][4];
+    for (int i=0; i<4; i++)
+    {
+      for (int j=0; j<4; j++)
+      {
+        sprites[i][j] = aux.get(j*32, i*32, 32, 32);
+        //j*larSpr,i*altSpr,larSpr,altSpr
+      }
+    }
+    tAni = new Timer(1000/4);
+    this.mEsq =0;
+    this.mCima = 0;
+  }
+
+  void playSound(Entity target) {
+    if (gameState == 1) {
+      playedSound = true;
+
+      chickenSound.setGain(-3);
+
+      chickenSound.trigger();
+    }
   }
 
   void move(Entity target, ArrayList<Enemy> allEnemies) {
     float nextX = positionVector.x;
     float nextY = positionVector.y;
+
 
     // Aceleração controlada
     velocityX = min(velocityX + acceleration, 1.5);
@@ -623,7 +696,7 @@ class Enemy extends Entity {
       positionVector.add(des);
     }
 
-    desenhar();
+    desenhar(target);
   }
 
   void checkAttack(Attack attack) {
@@ -704,21 +777,42 @@ class Enemy extends Entity {
     return hp > 0;
   }
 
-  void desenhar() {
-    float currentHp = map(hp, 0, maxHp, 0, hitboxWidth);
-    fill(240, 0, 0);
-    rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, hitboxWidth, 5);
+  void desenhar(Entity target) {
+    //float currentHp = map(hp, 0, maxHp, 0, hitboxWidth);
+    //fill(240, 0, 0);
+    //rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, hitboxWidth, 5);
 
-    fill(0, 240, 0);
-    rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, currentHp, 5);
+    //fill(0, 240, 0);
+    //rect(positionVector.x - cameraX, positionVector.y + (hitboxHeight * 1.1) - cameraY, currentHp, 5);
+
+
+    if (tAni.disparou())
+    {
+      quadro=(quadro+1)%4;
+    }
+
+    if (abs(target.positionVector.x) - abs(this.positionVector.x) > abs(target.positionVector.y) - abs(this.positionVector.y)) {
+      if (target.positionVector.x > this.positionVector.x)direcao=2;
+      else if (target.positionVector.x < this.positionVector.x)direcao=0;
+    } else if (abs(target.positionVector.x) - abs(this.positionVector.x) < abs(target.positionVector.y) - abs(this.positionVector.y)) {
+      if (target.positionVector.y > this.positionVector.y)direcao=3;
+      else if (target.positionVector.y < this.positionVector.y)direcao=1;
+    } else {
+      quadro = 0;
+    }
+
+    //if (target.positionVector.x > this.positionVector.x)direcao=2;
+    //else if (target.positionVector.x < this.positionVector.x)direcao=0;
+    //else if (target.positionVector.y > this.positionVector.y)direcao=1;
+    //else if (target.positionVector.y < this.positionVector.y)direcao=3;
+    //else quadro=0;
+
+    image(sprites[direcao][quadro], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
 
     //hitbox
-    if (hittable) {
-      fill(200, 110, 197);
-    } else {
-      fill(200, 110, 197, 100);
-    }
-    rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
+    //noFill();
+    //stroke(255, 0, 0);
+    //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
   }
 
 

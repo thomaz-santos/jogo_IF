@@ -38,10 +38,10 @@ class Attack {
   }
 
   void desenhar() {
-    noFill();
-    stroke(255, 0, 0);
-    rect(this.positionVector.x - cameraX, this.positionVector.y - cameraY, this.hitboxWidth, this.hitboxHeight);
-    stroke(0);
+    //noFill();
+    //stroke(255, 0, 0);
+    //rect(this.positionVector.x - cameraX, this.positionVector.y - cameraY, this.hitboxWidth, this.hitboxHeight);
+    //stroke(0);
   }
 }
 

@@ -16,6 +16,10 @@ class Timer {
     }
     return false;
   }
+  
+  public void reset() {
+    ultimoTempo = millis();
+  }
 }
 
 class GameTimer {
@@ -76,8 +80,8 @@ class GameTimer {
   }
 
   void draw() {
-    fill(240, 255, 246);
-    text((endTime - millis()) / 1000, width / 2, height * 0.08);
+    //fill(240, 255, 246);
+    //text((endTime - millis()) / 1000, width / 2, height * 0.08);
     
     this.currentSprite = ceil(currentTime/step);
     if(currentSprite >= 9) {currentSprite = 1;}
