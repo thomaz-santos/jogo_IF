@@ -277,7 +277,7 @@ class Player extends Entity {
       for (Enemy target : enemiesCrowd) {
         if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
           hp -= 1;
-          //hit.trigger();
+          playerHit.trigger();
           hittable = false;
           lastHit = millis();
         }
@@ -347,7 +347,7 @@ class Player extends Entity {
     for (Enemy target : enemiesCrowd) {
       if (checkCollisionX(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
         hp -= 1;
-        //hit.trigger();
+        playerHit.trigger();
         hittable = false;
         lastHit = millis();
       }
@@ -374,7 +374,7 @@ class Player extends Entity {
     for (Enemy target : enemiesCrowd) {
       if (checkCollisionY(target, positionVector.x, positionVector.y) && hp > 0 && hittable) {
         hp -= 1;
-        //hit.trigger();
+        playerHit.trigger();
         hittable = false;
         lastHit = millis();
       }

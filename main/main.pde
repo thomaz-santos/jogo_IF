@@ -39,6 +39,9 @@ AudioSample chickenSound;
 AudioSample buttonClickSound;
 AudioSample returnButtonClickSound;
 AudioSample chickenDieSound;
+AudioSample playerHit;
+AudioSample playerDie;
+AudioSample playerWin;
 ArrayList<AudioSample> globalSamples = new ArrayList<AudioSample>();
 
 AudioPlayer defaultMusic;
@@ -73,17 +76,27 @@ void setup() {
   //fullScreen();
 
   minim = new Minim(this);
-  playerAttackSound = minim.loadSample("audio/sfx/playerHit.mp3");
+  playerAttackSound = minim.loadSample("audio/sfx/playerAttackSound.mp3");
   chickenSound = minim.loadSample("audio/sfx/chickenSound.mp3");
   buttonClickSound = minim.loadSample("audio/sfx/buttonClick.mp3");
   returnButtonClickSound = minim.loadSample("audio/sfx/returnButtonClick.mp3");
+  
   chickenDieSound = minim.loadSample("audio/sfx/chickenDie.mp3");
   chickenDieSound.setGain(-15);
+  
+  playerHit = minim.loadSample("audio/sfx/playerHit.mp3");
+  playerHit.setGain(3);
+  playerDie = minim.loadSample("audio/sfx/playerDie.mp3");
+  playerWin = minim.loadSample("audio/sfx/playerWin.mp3");
+  
   globalSamples.add(playerAttackSound);
   globalSamples.add(chickenSound);
   globalSamples.add(buttonClickSound);
   globalSamples.add(returnButtonClickSound);
   globalSamples.add(chickenDieSound);
+  globalSamples.add(playerHit);
+  globalSamples.add(playerDie);
+  globalSamples.add(playerWin);
 
   defaultMusic = minim.loadFile("audio/music/defaultMusic.mp3");
 
@@ -188,6 +201,10 @@ void draw() {
     if (!p.isAlive() || !gameTimer.isActive()) {
       gameState = 0;
       initialTime = true;
+    }
+    
+    if(!p.isAlive()) {
+      playerDie.trigger();
     }
 
     if (quitGame) {
