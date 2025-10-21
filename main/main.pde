@@ -128,7 +128,7 @@ void setup() {
   p = new Player(pv, 3, 3, 64, 64, 5, 1.5, 0.3, 1);
   //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
 
-  crowd = new Crowd(p);
+  crowd = new Crowd(p, 10);
 
   cursorDefault = loadImage("HUD/cursorDefault.png");
   cursor(cursorDefault, 0, 0);

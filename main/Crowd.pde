@@ -2,8 +2,8 @@ class Crowd {
   ArrayList<Enemy> enemiesList = new ArrayList<Enemy>();
   int quantity, lastQuantity, firstQuantity;
 
-  Crowd(Entity player) {
-    this.quantity = player.level*5;
+  Crowd(Entity player, int qtde) {
+    this.quantity = qtde;
     this.lastQuantity = this.quantity;
     this.firstQuantity = quantity;
 
@@ -13,7 +13,7 @@ class Crowd {
   void create(Entity player) {
     this.lastQuantity = this.quantity;
 
-    quantity = floor(lastQuantity*random(1, 2.5));
+    quantity = floor(lastQuantity*random(1.5, 2.5));
 
     println("enemies created: " + this.quantity);
 
@@ -24,7 +24,7 @@ class Crowd {
       int signalX = value[int(random(-1, 2))];
       int signalY = value[int(random(-1, 2))];
       PVector pv = new PVector(player.positionVector.x + (signalX * random(500, width + 100)), player.positionVector.y + (signalY * random(500, width + 100)));
-      this.enemiesList.add(new Enemy(pv, 0, 0, 32, 32, 2)); //PVector pv, int vx, int vy, int hbw, int hbh, float hp
+      this.enemiesList.add(new Enemy(pv, 0, 0, 32, 32, 1)); //PVector pv, int vx, int vy, int hbw, int hbh, float hp
     }
 
     for (int x = 0; x < int(random(1, quantity*0.3)); x++) {
