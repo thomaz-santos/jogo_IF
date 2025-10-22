@@ -80,15 +80,15 @@ void setup() {
   chickenSound = minim.loadSample("audio/sfx/chickenSound.mp3");
   buttonClickSound = minim.loadSample("audio/sfx/buttonClick.mp3");
   returnButtonClickSound = minim.loadSample("audio/sfx/returnButtonClick.mp3");
-  
+
   chickenDieSound = minim.loadSample("audio/sfx/chickenDie.mp3");
   chickenDieSound.setGain(-15);
-  
+
   playerHit = minim.loadSample("audio/sfx/playerHit.mp3");
   playerHit.setGain(3);
   playerDie = minim.loadSample("audio/sfx/playerDie.mp3");
   playerWin = minim.loadSample("audio/sfx/playerWin.mp3");
-  
+
   globalSamples.add(playerAttackSound);
   globalSamples.add(chickenSound);
   globalSamples.add(buttonClickSound);
@@ -152,10 +152,19 @@ void draw() {
 
   case 1:
     if (initialTime) {
-      gameTimer = new GameTimer(30);
+      gameTimer = new GameTimer(5);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
-      p.reset();
-      crowd.reset();
+      //p.reset();
+      //crowd.reset();
+
+      pv = new PVector(width/2, height/2);
+      p = new Player(pv, 3, 3, 64, 64, 5, 1.5, 0.3, 1);
+      //PVector pv, float vx, float vy, int hbw, int hbh, float maxVelocity, float acceleration, float fricction, int attackDamage
+      crowd = new Crowd(p, 10);
+
+      cameraX = 0;
+      cameraY = 0;
+
 
       initialTime = false;
     }
@@ -202,8 +211,8 @@ void draw() {
       gameState = 0;
       initialTime = true;
     }
-    
-    if(!p.isAlive()) {
+
+    if (!p.isAlive()) {
       playerDie.trigger();
     }
 
