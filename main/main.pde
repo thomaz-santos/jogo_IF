@@ -69,6 +69,8 @@ int currentClockSprite;
 
 PVector returnButtonPV;
 Button returnButton;
+
+float endGameTime;
 //PVector pv, float hitboxWidth, float hitboxHeight, String text, String path, int v
 
 void setup() {
@@ -152,7 +154,7 @@ void draw() {
 
   case 1:
     if (initialTime) {
-      gameTimer = new GameTimer(5);
+      gameTimer = new GameTimer(60);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
       //p.reset();
       //crowd.reset();
@@ -208,7 +210,8 @@ void draw() {
     }
 
     if (!p.isAlive() || !gameTimer.isActive()) {
-      gameState = 0;
+      endGameTime = millis();
+      gameState = 4;
       initialTime = true;
     }
 
@@ -236,14 +239,16 @@ void draw() {
 
   case 4:
     background(0);
-    String text;
+    //String text;
     if (!p.isAlive()) {
-      text = "Voce perdeu! KKKKKKKKKK";
+      gameState = endGameAnimation(endGameTime);
+      //text = "Voce perdeu! KKKKKKKKKK";
     } else {
-      text = "Você conseguiu sobreviver!";
+      gameState = endGameAnimation(endGameTime);
+      //text = "Você conseguiu sobreviver!";
     }
-    textAlign(CENTER);
-    text(text, width/2, height/2);
+    //textAlign(CENTER);
+    //text(text, width/2, height/2);
     break;
 
   case 5:
@@ -339,6 +344,28 @@ void draw() {
     gameState = menuManager.update(gameState);
     break;
   }
+}
+
+void damageScreenAnimation(float damageTime) {
+  int duration = 300;
+  float opacity = map(millis(), damageTime, damageTime+duration, 160, 50);
+  
+  if (millis() > damageTime && millis() < damageTime+duration) {
+    fill(196, 35, 24, opacity);
+    rect(0, 0, width, height);
+  }
+}
+
+int endGameAnimation(float endGameTime) {
+  float backgroundColor = map(millis(), endGameTime+3000, endGameTime, 0, 255);
+
+  background(floor(backgroundColor));
+
+  if (floor(backgroundColor) <= 1) {
+    return 0;
+  }
+
+  return 4;
 }
 
 void setupTutorialIdle() {
