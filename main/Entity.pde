@@ -176,11 +176,11 @@ class Player extends Entity {
   int attackDamage;
 
   PImage lifePoint;
+  PImage emptyLifePoint;
   PImage[][] sprites;
   Timer tAni; //timer animação
   int quadro, direcao;
   int mEsq, mCima;
-
   boolean attacking; // se está no meio de uma animação de ataque
   int atkFrame;          // quadro atual da animação de ataque
   int atkFrames;         // número de quadros da animação (ajuste conforme sprite)
@@ -195,7 +195,7 @@ class Player extends Entity {
     this.attackDamage = atkDmg;
 
     this.lifePoint = loadImage("HUD/life-point.png");
-
+    this.emptyLifePoint = loadImage("HUD/empty-life-point.png");
     PImage aux;
     aux = loadImage("characters/player/player4.png");
     aux.resize(64*4*2, 64*4*3);
@@ -519,19 +519,6 @@ class Player extends Entity {
 
   @Override
     void desenhar() {
-    // Pontos do jogador
-    fill(58, 207, 117);
-    textAlign(LEFT);
-    text("Pontos: " + experience, 10, height * 0.04);
-
-    // Hitbox do jogador
-    //if (hittable) fill(7, 138, 65, 255);
-    //else fill(7, 138, 65, 120);
-    //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
-    //fill(255, 0, 0, 255);
-    //noFill();
-    //stroke(0, 255, 0);
-    //rect(positionVector.x - cameraX, positionVector.y - cameraY, hitboxWidth, hitboxHeight);
 
     if (tAni.disparou())
     {
@@ -568,33 +555,18 @@ class Player extends Entity {
       image(sprites[direcao][quadro], this.positionVector.x-cameraX-mEsq, this.positionVector.y-cameraY-mCima);
       stroke(0);
       noFill();
+      
+      damageScreenAnimation(this.lastHit);
     }
-
-    //Indicador de dash
-    //if (dashAvailable) {
-    //  rectMode(CENTER);
-    //  fill(10, 50, 190);
-    //  rect((this.positionVector.x + this.hitboxWidth/2)-cameraX, (this.positionVector.y + this.hitboxHeight/2)-cameraY, this.hitboxWidth*0.4, this.hitboxHeight*0.4);
-    //  rectMode(CORNER);
-    //}
-
+    
+    for (int i = 0; i<this.maxHp; i++) {
+      image(this.emptyLifePoint, width*0.03 + i*width*0.04, height*0.05);
+    }
+    
     for (int i = 0; i<this.hp; i++) {
-      image(lifePoint, width*0.03 + i*32, height*0.05);
+      image(lifePoint, width*0.03 + i*width*0.04, height*0.05);
     }
 
-    ////Nivel do jogador
-    //fill(58, 207, 117);
-    //textAlign(LEFT);
-    //text(level, width*0.95, height * 0.04);
-
-    ////Barra de nível do Jogador
-    //this.manageLevel();
-
-    //float currentXp = map(this.experience, 0, level*20, 0, width*0.4);
-    //fill(186, 7, 7);
-    //rect(width*0.3, 60, width*0.4, 20);
-    //fill(10, 40, 200);
-    //rect(width*0.3, 60, currentXp, 20);
   }
 }
 
