@@ -5,9 +5,14 @@ class MenuManager {
 
   PImage menuTitle;
   PImage pauseMenuTemplate;
+  
+  Slider slider;
 
   public MenuManager(int gm) {
     this.gameState = gm;
+    
+    this.slider = new Slider("HUD/soundIcon", height/2, width*0.25, width*0.5, -30, 10);
+    this.slider.value = 0;
   }
 
   void createInitialMenu() {
@@ -41,11 +46,14 @@ class MenuManager {
     PVector pv = new PVector(width*0.02, height*0.05);
     Button b1 = new Button(pv, 128, 128, "", "HUD/returnIcon", 0);
 
-    PVector pv2 = new PVector(width/2 - (64), height/2);
-    Button b2 = new Button(pv2, 128, 128, "soundIcon", "HUD/soundIcon", 2);
+    //PVector pv2 = new PVector(width/2 - (64), height/2);
+    //Button b2 = new Button(pv2, 128, 128, "soundIcon", "HUD/soundIcon", 2);
+    
+    //PVector pv2 = new PVector(width/2 - (64), height/2);
+    //this.slider = new Slider("HUD/soundIcon", height/2, width*0.25, width*0.5, 0, 100);
 
     this.menuButtonsList.add(b1);
-    this.menuButtonsList.add(b2);
+    //this.menuButtonsList.add(b2);
   }
 
   void createCreditsMenu() {
@@ -94,6 +102,8 @@ class MenuManager {
         }
       }
     }
+    
+    slider.atualizar();
 
     return gameState;
   }
@@ -121,25 +131,27 @@ class MenuManager {
         b.draw();
 
         if (b.collision()) {
-          if (b.text == "soundIcon") {
-            b.text = "muteIcon";
-            b.sprite = loadImage("HUD/muteIcon.png");
-            b.spritePressed = loadImage("HUD/muteIconPressed.png");
-            for (AudioSample a : globalSamples) {
-              a.mute();
-            }
-            defaultMusic.pause();
-          } else {
-            b.text = "soundIcon";
-            b.sprite = loadImage("HUD/soundIcon.png");
-            b.spritePressed = loadImage("HUD/soundIconPressed.png");
-            for (AudioSample a : globalSamples) {
-              a.unmute();
-            }
-            defaultMusic.play();
-          }
+          //if (b.text == "soundIcon") {
+          //  b.text = "muteIcon";
+          //  b.sprite = loadImage("HUD/muteIcon.png");
+          //  b.spritePressed = loadImage("HUD/muteIconPressed.png");
+          //  for (AudioSample a : globalSamples) {
+          //    a.mute();
+          //  }
+          //  defaultMusic.pause();
+          //} else {
+          //  b.text = "soundIcon";
+          //  b.sprite = loadImage("HUD/soundIcon.png");
+          //  b.spritePressed = loadImage("HUD/soundIconPressed.png");
+          //  for (AudioSample a : globalSamples) {
+          //    a.unmute();
+          //  }
+          //  defaultMusic.play();
+          //}
         }
       }
+      
+      this.slider.desenhar();
 
       break;
 
@@ -202,6 +214,19 @@ class Button {
     this.imagePath = path;
     this.value = v;
 
+    this.sprite = loadImage(this.imagePath + ".png");
+    this.sprite.resize(sprite.width/2, sprite.height/2);
+    this.hitboxWidth = sprite.width;
+    this.hitboxHeight = sprite.height;
+
+    this.spritePressed = loadImage(path + "Pressed.png");
+    this.spritePressed.resize(spritePressed.width/2, spritePressed.height/2);
+  }
+  
+  public Button(PVector pv, String path) {
+    this.positionVector = pv;
+    this.imagePath = path;
+    
     this.sprite = loadImage(this.imagePath + ".png");
     this.sprite.resize(sprite.width/2, sprite.height/2);
     this.hitboxWidth = sprite.width;

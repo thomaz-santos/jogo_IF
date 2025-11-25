@@ -80,15 +80,23 @@ class GameTimer {
   }
 
   void draw() {
-    //fill(240, 255, 246);
-    //text((endTime - millis()) / 1000, width / 2, height * 0.08);
+    fill(240, 255, 246);
+    textAlign(CENTER);
+    textSize(30);
+    if((endTime - millis())/1000 >= 0) {
+      text((endTime - millis()) / 1000, width / 2, height * 0.16);
+    } else {
+      text(0, width / 2, height * 0.16);
+    }
+    
+    textAlign(LEFT);
     
     this.currentSprite = ceil(currentTime/step);
     if(currentSprite >= 9) {currentSprite = 1;}
     
     this.sprite = loadImage("HUD/timer/timer" + this.currentSprite + ".png");
     
-    image(this.sprite, width / 2 - (this.sprite.width/2), height * 0.08);
+    image(this.sprite, width / 2 - (this.sprite.width/2), height * 0.03);
   }
 }
 

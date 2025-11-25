@@ -50,10 +50,6 @@ class Crowd {
         }
       }
       
-      if(!enemy.playedSound && int(random(1, 3000)) == 10) {
-        enemy.playSound(player);
-      }
-      
       if (!enemy.isAlive()) {
         if (int(random(1, 20)) == 4) {
           chickenDieSound.trigger();

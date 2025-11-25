@@ -66,11 +66,16 @@ Timer clockIdle;
 PImage clockSprite;
 int currentClockSprite;
 
+PImage winScreen;
+PImage loseScreen;
 
 PVector returnButtonPV;
 Button returnButton;
 
 float endGameTime;
+
+boolean firstPlay = true;
+Timer firstPlayTimer;
 //PVector pv, float hitboxWidth, float hitboxHeight, String text, String path, int v
 
 void setup() {
@@ -80,14 +85,15 @@ void setup() {
   minim = new Minim(this);
   playerAttackSound = minim.loadSample("audio/sfx/playerAttackSound.mp3");
   chickenSound = minim.loadSample("audio/sfx/chickenSound.mp3");
+  chickenSound.setGain(-9);
   buttonClickSound = minim.loadSample("audio/sfx/buttonClick.mp3");
   returnButtonClickSound = minim.loadSample("audio/sfx/returnButtonClick.mp3");
 
   chickenDieSound = minim.loadSample("audio/sfx/chickenDie.mp3");
-  chickenDieSound.setGain(-15);
+  chickenDieSound.setGain(-20);
 
   playerHit = minim.loadSample("audio/sfx/playerHit.mp3");
-  playerHit.setGain(3);
+  playerHit.setGain(-2);
   playerDie = minim.loadSample("audio/sfx/playerDie.mp3");
   playerWin = minim.loadSample("audio/sfx/playerWin.mp3");
 
@@ -110,6 +116,9 @@ void setup() {
   aIcon = loadImage("controlls/btn_controlls_a2.png");
   sIcon = loadImage("controlls/btn_controlls_s2.png");
   dIcon = loadImage("controlls/btn_controlls_d2.png");
+
+  winScreen = loadImage("HUD/win-screen.png");
+  loseScreen = loadImage("HUD/lose-screen.png");
 
   cameraX = 0;
   cameraY = 0;
@@ -155,6 +164,8 @@ void draw() {
   case 1:
     if (initialTime) {
       gameTimer = new GameTimer(60);
+
+      firstPlayTimer = new Timer(5000);
       //RESETAR TODOS OS VALORES PARA OS INICIAIS
       //p.reset();
       //crowd.reset();
@@ -169,6 +180,16 @@ void draw() {
 
 
       initialTime = false;
+    }
+
+    if (firstPlay) {
+      if (!firstPlayTimer.disparou()) {
+        tutorialScreen();
+        gameTimer.pause();
+      } else {
+        firstPlay = false;
+        gameTimer.resume();
+      }
     }
 
     if (!gameTimer.paused) {
@@ -202,7 +223,10 @@ void draw() {
       frente.exibir(1);
 
       ajustarCamera(p, 100);
-    } else {
+
+      Enemy e = crowd.enemiesList.get(0);
+      e.playSound(p);
+    } else if (firstPlay == false) {
       //text("Pausado", width/2, height/2);
       initialTime = true;
       gameTimer.paused = false;
@@ -213,6 +237,10 @@ void draw() {
       endGameTime = millis();
       gameState = 4;
       initialTime = true;
+
+      if (p.isAlive()) {
+        playerWin.trigger();
+      }
     }
 
     if (!p.isAlive()) {
@@ -228,6 +256,22 @@ void draw() {
   case 2:
     background(205, 223, 108);
     menuManager.createOptionsMenu();
+
+    float volume = menuManager.slider.value;
+    if (volume < -29) {
+      for (AudioSample a : globalSamples) {
+        a.mute();
+      }
+      defaultMusic.mute();
+    } else {
+      for (AudioSample a : globalSamples) {
+        a.unmute();
+        a.setGain(volume);
+      }
+      defaultMusic.unmute();
+      defaultMusic.setGain(volume);
+    }
+
     gameState = menuManager.update(gameState);
     break;
 
@@ -238,7 +282,7 @@ void draw() {
     break;
 
   case 4:
-    background(0);
+    //background(0);
     //String text;
     if (!p.isAlive()) {
       gameState = endGameAnimation(endGameTime);
@@ -349,19 +393,133 @@ void draw() {
 void damageScreenAnimation(float damageTime) {
   int duration = 300;
   float opacity = map(millis(), damageTime, damageTime+duration, 160, 50);
-  
+
   if (millis() > damageTime && millis() < damageTime+duration) {
     fill(196, 35, 24, opacity);
     rect(0, 0, width, height);
   }
 }
 
+void tutorialScreen() {
+  background(205, 223, 108);
+  image(tutorialHUD, width*0.07, height*0.07);
+
+  if (moveUp) {
+    wIcon = loadImage("controlls/btnPressed_controlls_w2.png");
+  } else {
+    wIcon = loadImage("controlls/btn_controlls_w2.png");
+  }
+
+  if (moveLeft) {
+    aIcon = loadImage("controlls/btnPressed_controlls_a2.png");
+  } else {
+    aIcon = loadImage("controlls/btn_controlls_a2.png");
+  }
+
+  if (moveDown) {
+    sIcon = loadImage("controlls/btnPressed_controlls_s2.png");
+  } else {
+    sIcon = loadImage("controlls/btn_controlls_s2.png");
+  }
+
+  if (moveRight) {
+    dIcon = loadImage("controlls/btnPressed_controlls_d2.png");
+  } else {
+    dIcon = loadImage("controlls/btn_controlls_d2.png");
+  }
+
+  image(wIcon, width*0.23, height*0.11);
+  image(aIcon, width*0.16, height*0.2);
+  image(sIcon, width*0.23, height*0.2);
+  image(dIcon, width*0.3, height*0.2);
+
+  //Idle do personagem
+  if (attacking) {
+    if (atkAni.disparou()) {
+      atkFrame++;
+      if (atkFrame >= atkFrames) {
+        atkFrame = 0;
+        attacking = false;
+      }
+    }
+
+
+    int linhaAtk = (direcao == 2) ? 4 : 5;
+    image(sprites[linhaAtk][atkFrame], width*0.19, height*0.4);
+  } else {
+    // parado (idle)
+    int linhaIdle = direcao;
+    image(sprites[linhaIdle][0], width*0.19, height*0.4);
+  }
+
+  // Animação do inimigo (idle para esquerda)
+  if (enemyIdleAni.disparou()) {       // usa um timer separado para o inimigo
+    enemyIdleFrame = (enemyIdleFrame + 1) % 4;  // 4 frames por linha
+  }
+
+  int linhaIdle = 2; // linha 4 do spritesheet (esquerda), índice 3
+  image(enemySprites[linhaIdle][enemyIdleFrame], width*0.17, height*0.77);
+
+
+  if (clockIdle.disparou()) {
+    currentClockSprite++;
+    if (currentClockSprite >= 9) {
+      currentClockSprite = 1;
+    }
+  }
+
+  clockSprite = loadImage("HUD/timer/timer" + currentClockSprite + ".png");
+
+  image(clockSprite, width*0.3, height * 0.7);
+
+  //returnButton.draw();
+
+  //if (returnButton.collision()) {
+  //  returnButtonClickSound.trigger();
+  //  gameState = returnButton.value;
+  //}
+}
+
 int endGameAnimation(float endGameTime) {
-  float backgroundColor = map(millis(), endGameTime+3000, endGameTime, 0, 255);
 
-  background(floor(backgroundColor));
+  float backgroundColor = map(millis(), endGameTime+1800, endGameTime, 255, 0);
 
-  if (floor(backgroundColor) <= 1) {
+  //background(floor(backgroundColor));
+  fundo.exibir(1);
+  colisao.exibir(1);
+  for (Enemy e : crowd.enemiesList) {
+    e.desenhar(p);
+  }
+  p.desenhar();
+  gameTimer.draw();
+  frente.exibir(1);
+
+  fill(205, 223, 108, backgroundColor);
+  rect(0, 0, width, height);
+
+  if (p.isAlive()) {
+    image(winScreen, width/4, height/4);
+
+    if (millis() > endGameTime+1800) {
+      fill(205, 223, 108, backgroundColor);
+      rect(0, 0, width, height);
+
+      image(winScreen, width/4, height/4);
+    }
+  } else {
+    image(loseScreen, width/4, height/4);
+
+    if (millis() > endGameTime+1800) {
+      fill(205, 223, 108, backgroundColor);
+      rect(0, 0, width, height);
+
+      image(loseScreen, width/4, height/4);
+    }
+  }
+
+
+
+  if (millis() > endGameTime+5000) {
     return 0;
   }
 

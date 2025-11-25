@@ -131,22 +131,22 @@ class Entity {
   }
 
   void desenhar() {
-    // Pontos do jogador
-    fill(58, 207, 117);
-    textAlign(LEFT);
-    text("Pontos: " + experience, width * 0.001, height * 0.04);
+    //// Pontos do jogador
+    //fill(58, 207, 117);
+    //textAlign(LEFT);
+    //text("Pontos: " + experience, width * 0.001, height * 0.04);
 
-    // Hitbox do jogador
-    if (hittable) fill(7, 138, 65, 255);
-    else fill(7, 138, 65, 120);
-    rect(positionVector.x, positionVector.y, hitboxWidth, hitboxHeight);
+    //// Hitbox do jogador
+    //if (hittable) fill(7, 138, 65, 255);
+    //else fill(7, 138, 65, 120);
+    //rect(positionVector.x, positionVector.y, hitboxWidth, hitboxHeight);
 
-    // Barra de vida do jogador
-    float currentHp = map(hp, 0, maxHp, 0, 200);
-    fill(186, 7, 7);
-    rect(10, 60, 200, 20);
-    fill(58, 207, 117);
-    rect(10, 60, currentHp, 20);
+    //// Barra de vida do jogador
+    //float currentHp = map(hp, 0, maxHp, 0, 200);
+    //fill(186, 7, 7);
+    //rect(10, 60, 200, 20);
+    //fill(58, 207, 117);
+    //rect(10, 60, currentHp, 20);
   }
 }
 
@@ -580,6 +580,8 @@ class Enemy extends Entity {
   int mEsq, mCima;
   //Timer soundTimer;
   boolean playedSound;
+  int lastPlayed;
+  
 
   public Enemy(PVector pv, float vx, float vy, int hbw, int hbh, float hp) {
     super(pv, vx, vy, hbw, hbh);
@@ -610,12 +612,15 @@ class Enemy extends Entity {
   }
 
   void playSound(Entity target) {
-    if (gameState == 1) {
+    
+    if (gameState == 1 && !playedSound) {
       playedSound = true;
 
-      chickenSound.setGain(-3);
-
       chickenSound.trigger();
+      lastPlayed = millis();
+    }
+    if(millis() > lastPlayed+5000) {
+      playedSound = false;
     }
   }
 
